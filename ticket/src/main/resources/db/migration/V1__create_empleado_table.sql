@@ -1,0 +1,10 @@
+CREATE TABLE empleado (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username VARCHAR(255) NOT NULL ,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    passwordHash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_email ON empleado(email);
