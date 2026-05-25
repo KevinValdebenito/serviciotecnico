@@ -29,13 +29,16 @@ public class Empleado {
     private UUID id;
 
     @Column(nullable = false)
-    private String nombre;
+    private String username;
 
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Column(nullable = false)
+    private String rol;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
