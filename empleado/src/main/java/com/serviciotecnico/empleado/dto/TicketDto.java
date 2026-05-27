@@ -4,8 +4,10 @@ import java.util.UUID;
 
 public record TicketDto(
     UUID id,
-    String name,
+    String title,
     String description,
-    String status
+    String status,
+    String priority,
+    UUID employeeId
 ) {
 }

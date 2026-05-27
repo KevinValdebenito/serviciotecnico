@@ -7,7 +7,7 @@ import com.serviciotecnico.empleado.dto.TicketDto;
 
 public interface TicketClient {
     List<TicketDto> getAllTickets();
-    List<TicketDto> searchTickets(String name, String status);
+    List<TicketDto> searchTickets(String title, String status);
     TicketDto getTicketById(UUID id);
     TicketDto createTicket(TicketDto ticketDto);
     TicketDto updateTicket(UUID id, TicketDto ticketDto);

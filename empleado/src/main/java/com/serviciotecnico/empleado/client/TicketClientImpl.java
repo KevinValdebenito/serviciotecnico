@@ -39,11 +39,11 @@ public class TicketClientImpl implements TicketClient {
     }
 
     @Override
-    public List<TicketDto> searchTickets(String name, String status) {
+    public List<TicketDto> searchTickets(String title, String status) {
         ResponseEntity<List<TicketDto>> response = restClient.get().uri(uriBuilder -> {
             var builder = uriBuilder.path("/tickets");
-            if (name != null && !name.isBlank()) {
-                builder.queryParam("name", name);
+            if (title != null && !title.isBlank()) {
+                builder.queryParam("title", title);
             }
             if (status != null && !status.isBlank()) {
                 builder.queryParam("status", status);
