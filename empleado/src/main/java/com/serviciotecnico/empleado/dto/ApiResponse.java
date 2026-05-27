@@ -1,0 +1,20 @@
+package com.serviciotecnico.empleado.dto;
+
+import org.flywaydb.core.api.ErrorDetails;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record ApiResponse <T> (
+    boolean success,
+    T data,
+    ErrorDetails error
+) {
+    public ApiResponse(boolean success, T data) {
+        this(success, data, null);
+    }
+
+    public ApiResponse(boolean success, ErrorDetails error) {
+        this(success, null, error);
+    }
+}
