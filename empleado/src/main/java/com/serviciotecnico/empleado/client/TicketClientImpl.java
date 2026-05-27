@@ -66,7 +66,7 @@ public class TicketClientImpl implements TicketClient {
     @Override
     public TicketDto getTicketById(UUID id){
         TicketDto ticket = restClient.get()
-                .uri("/tickers/{id}", id)
+                .uri("/tickets/{id}", id)
                 .retrieve()
                 .body(TicketDto.class);
         return ticket;
@@ -75,7 +75,7 @@ public class TicketClientImpl implements TicketClient {
     @Override
     public TicketDto createTicket(TicketDto ticketDto){
         ResponseEntity<TicketDto> response = restClient.post()
-                .uri("/tickers")
+                .uri("/tickets")
                 .body(ticketDto)
                 .retrieve()
                 .toEntity(TicketDto.class);
@@ -90,7 +90,7 @@ public class TicketClientImpl implements TicketClient {
     @Override
     public TicketDto updateTicket(UUID id, TicketDto ticketDto){
         ResponseEntity<TicketDto> response = restClient.put()
-                .uri("/tickers/{id}", id)
+                .uri("/tickets/{id}", id)
                 .body(ticketDto)
                 .retrieve()
                 .toEntity(TicketDto.class);
@@ -105,7 +105,7 @@ public class TicketClientImpl implements TicketClient {
     @Override
     public void deleteTicket(UUID id) {
         ResponseEntity<Void> response = restClient.delete()
-                .uri("/tickers/{id}", id)
+                .uri("/tickets/{id}", id)
                 .retrieve()
                 .toBodilessEntity();
         HttpStatusCode statusCode = response.getStatusCode();
