@@ -18,77 +18,77 @@ public class Ticket {
     @Column(name = "id", nullable = false, unique = true)
     private UUID id;
 
-    @Column(name = "titulo", nullable = false)
-    private String titulo;
+    @Column(name = "title", nullable = false)
+    private String title;
 
-    @Column(name = "descripcion", nullable = false)
-    private String descripcion;
+    @Column(name = "description", nullable = false)
+    private String description;
 
-    @Column(name = "estado", nullable = false)
-    private String estado;
+    @Column(name = "status", nullable = false)
+    private String status;
 
-    @Column(name = "prioridad", nullable = false)
-    private String prioridad;
+    @Column(name = "priority", nullable = false)
+    private String priority;
 
-    @Column(name = "empleado_id", nullable = false)
-    private UUID empleadoId;
+    @Column(name = "employee_id", nullable = false)
+    private UUID employeeId;
 
     public Ticket() {
     }
 
-    public Ticket(String titulo, String descripcion, String estado, String prioridad, UUID empleadoId) {
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.estado = estado;
-        this.prioridad = prioridad;
-        this.empleadoId = empleadoId;
+    public Ticket(String title, String description, String status, String priority, UUID employeeId) {
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.priority = priority;
+        this.employeeId = employeeId;
     }
 
     public UUID getId() {
         return id;
     }
 
-    public String getTitulo() {
-        return titulo;
+    public String getTitle() {
+        return title;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public String getDescription() {
+        return description;
     }
 
-    public String getEstado() {
-        return estado;
+    public String getStatus() {
+        return status;
     }
 
-    public String getPrioridad() {
-        return prioridad;
+    public String getPriority() {
+        return priority;
     }
 
-    public UUID getEmpleadoId() {
-        return empleadoId;
+    public UUID getEmployeeId() {
+        return employeeId;
     }
 
     public void setId(UUID id) {
         this.id = id;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public void setPrioridad(String prioridad) {
-        this.prioridad = prioridad;
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 
-    public void setEmpleadoId(UUID empleadoId) {
-        this.empleadoId = empleadoId;
+    public void setEmployeeId(UUID employeeId) {
+        this.employeeId = employeeId;
     }
 }

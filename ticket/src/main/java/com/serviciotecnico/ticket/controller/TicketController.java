@@ -30,23 +30,22 @@ public class TicketController {
 
     @GetMapping
     public ResponseEntity<List<TicketDto>> getAllTickets(
-            @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) String estado,
-            @RequestParam(required = false) String prioridad,
-            @RequestParam(required = false) UUID empleadoId) {
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) UUID employeeId) {
 
-        boolean hasFilters = (titulo != null && !titulo.isBlank())
-                || (estado != null && !estado.isBlank())
-                || (prioridad != null && !prioridad.isBlank())
-                || empleadoId != null;
+        boolean hasFilters = (title != null && !title.isBlank())
+                || (status != null && !status.isBlank())
+                || (priority != null && !priority.isBlank())
+                || employeeId != null;
 
         List<TicketDto> tickets = hasFilters
-                ? ticketService.searchTickets(titulo, estado, prioridad, empleadoId)
+                ? ticketService.searchTickets(title, status, priority, employeeId)
                 : ticketService.getAllTickets();
 
         return ResponseEntity.ok(tickets);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<TicketDto> getTicketById(@PathVariable UUID id) {
