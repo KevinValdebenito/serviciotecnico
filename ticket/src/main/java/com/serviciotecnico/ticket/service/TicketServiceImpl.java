@@ -27,16 +27,16 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public List<TicketDto> searchTickets(String titulo, String estado, String prioridad, UUID empleadoId) {
+    public List<TicketDto> searchTickets(String title, String status, String priority, UUID employeeId) {
         return ticketRepository.findAll().stream()
-                .filter(ticket -> titulo == null || titulo.isBlank()
-                        || ticket.getTitulo().toLowerCase().contains(titulo.toLowerCase()))
-                .filter(ticket -> estado == null || estado.isBlank()
-                        || ticket.getEstado().equalsIgnoreCase(estado))
-                .filter(ticket -> prioridad == null || prioridad.isBlank()
-                        || ticket.getPrioridad().equalsIgnoreCase(prioridad))
-                .filter(ticket -> empleadoId == null
-                        || ticket.getEmpleadoId().equals(empleadoId))
+                .filter(ticket -> title == null || title.isBlank()
+                        || ticket.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(ticket -> status == null || status.isBlank()
+                        || ticket.getStatus().equalsIgnoreCase(status))
+                .filter(ticket -> priority == null || priority.isBlank()
+                        || ticket.getPriority().equalsIgnoreCase(priority))
+                .filter(ticket -> employeeId == null
+                        || ticket.getEmployeeId().equals(employeeId))
                 .map(this::convertToDto)
                 .toList();
     }
@@ -54,11 +54,11 @@ public class TicketServiceImpl implements TicketService {
         Ticket existingTicket = ticketRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
 
-        existingTicket.setTitulo(ticketDto.getTitulo());
-        existingTicket.setDescripcion(ticketDto.getDescripcion());
-        existingTicket.setEstado(ticketDto.getEstado());
-        existingTicket.setPrioridad(ticketDto.getPrioridad());
-        existingTicket.setEmpleadoId(ticketDto.getEmpleadoId());
+        existingTicket.setTitle(ticketDto.getTitle());
+        existingTicket.setDescription(ticketDto.getDescription());
+        existingTicket.setStatus(ticketDto.getStatus());
+        existingTicket.setPriority(ticketDto.getPriority());
+        existingTicket.setEmployeeId(ticketDto.getEmployeeId());
 
         Ticket updatedTicket = ticketRepository.save(existingTicket);
 
@@ -87,11 +87,11 @@ public class TicketServiceImpl implements TicketService {
     private TicketDto convertToDto(Ticket ticket) {
         return new TicketDto(
                 ticket.getId(),
-                ticket.getTitulo(),
-                ticket.getDescripcion(),
-                ticket.getEstado(),
-                ticket.getPrioridad(),
-                ticket.getEmpleadoId()
+                ticket.getTitle(),
+                ticket.getDescription(),
+                ticket.getStatus(),
+                ticket.getPriority(),
+                ticket.getEmployeeId()
         );
     }
 
@@ -99,11 +99,11 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = new Ticket();
 
         ticket.setId(ticketDto.getId());
-        ticket.setTitulo(ticketDto.getTitulo());
-        ticket.setDescripcion(ticketDto.getDescripcion());
-        ticket.setEstado(ticketDto.getEstado());
-        ticket.setPrioridad(ticketDto.getPrioridad());
-        ticket.setEmpleadoId(ticketDto.getEmpleadoId());
+        ticket.setTitle(ticketDto.getTitle());
+        ticket.setDescription(ticketDto.getDescription());
+        ticket.setStatus(ticketDto.getStatus());
+        ticket.setPriority(ticketDto.getPriority());
+        ticket.setEmployeeId(ticketDto.getEmployeeId());
 
         return ticket;
     }

@@ -8,7 +8,7 @@ import com.serviciotecnico.ticket.dto.TicketDto;
 public interface TicketService {
     List<TicketDto> getAllTickets();
 
-    List<TicketDto> searchTickets(String titulo, String estado, String prioridad, UUID empleadoId);
+    List<TicketDto> searchTickets(String title, String status, String priority, UUID employeeId);
 
     TicketDto getTicketById(UUID id);
 

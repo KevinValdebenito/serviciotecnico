@@ -1,0 +1,2 @@
+ALTER TABLE ticket
+ALTER COLUMN description TYPE TEXT;

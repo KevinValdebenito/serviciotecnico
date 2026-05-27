@@ -1,0 +1,2 @@
+ALTER TABLE ticket
+ADD COLUMN employee_id UUID NOT NULL;
