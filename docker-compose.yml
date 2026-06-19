@@ -1,0 +1,69 @@
+services:
+  db-empleado:
+    image: postgres:15-alpine
+    container_name: postgres-empleado
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: employee_db
+    ports:
+      - "5432:5432"
+
+  db-ticket:
+    image: postgres:15-alpine
+    container_name: postgres-ticket
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ticket
+    ports:
+      - "5433:5432"
+
+  db-cliente:
+    image: postgres:15-alpine
+    container_name: postgres-cliente
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: cliente_db
+    ports:
+      - "5434:5432"
+
+  # ==========================================
+  # MICROSERVICIOS
+  # ==========================================
+  app-empleado:
+    build: ./empleado
+    container_name: api-empleado
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=jdbc:postgresql://db-empleado:5432/employee_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+    depends_on:
+      - db-empleado
+
+  app-ticket:
+    build: ./ticket
+    container_name: api-ticket
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_URL=jdbc:postgresql://db-ticket:5432/ticket
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+    depends_on:
+      - db-ticket
+
+  app-cliente:
+    build: ./cliente
+    container_name: api-cliente
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_URL=jdbc:postgresql://db-cliente:5432/cliente_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+    depends_on:
+      - db-cliente
