@@ -1,4 +1,5 @@
 services:
+ 
   db-empleado:
     image: postgres:15-alpine
     container_name: postgres-empleado
@@ -29,9 +30,16 @@ services:
     ports:
       - "5434:5432"
 
-  # ==========================================
-  # MICROSERVICIOS
-  # ==========================================
+  db-auth:
+    image: postgres:15-alpine
+    container_name: postgres-auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: auth_db
+    ports:
+      - "5435:5432"
+
   app-empleado:
     build: ./empleado
     container_name: api-empleado
@@ -67,3 +75,31 @@ services:
       - DB_PASSWORD=root
     depends_on:
       - db-cliente
+
+  app-auth:
+    build: ./auth
+    container_name: api-auth
+    ports:
+      - "7778:7778"
+    environment:
+      - DB_URL=jdbc:postgresql://db-auth:5432/auth_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+    depends_on:
+      - db-auth
+
+  app-bff:
+    build: ./bff
+    container_name: api-bff
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://app-auth:7778
+      - EMPLEADO_SERVICE_URL=http://app-empleado:8081
+      - TICKET_SERVICE_URL=http://app-ticket:8082
+      - CLIENTE_SERVICE_URL=http://app-cliente:8083
+    depends_on:
+      - app-auth
+      - app-empleado
+      - app-ticket
+      - app-cliente

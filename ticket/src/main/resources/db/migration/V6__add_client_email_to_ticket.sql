@@ -1,0 +1,2 @@
+ALTER TABLE ticket ADD COLUMN client_email VARCHAR(255);
+ALTER TABLE ticket ALTER COLUMN employee_id DROP NOT NULL;

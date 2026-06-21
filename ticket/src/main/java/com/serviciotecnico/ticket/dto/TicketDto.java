@@ -9,17 +9,19 @@ public class TicketDto {
         private String status;
         private String priority;
         private UUID employeeId;
+        private String clientEmail;
 
         public TicketDto() {
         }
 
-        public TicketDto(UUID id, String title, String description, String status, String priority, UUID employeeId) {
+        public TicketDto(UUID id, String title, String description, String status, String priority, UUID employeeId, String clientEmail) {
                 this.id = id;
                 this.title = title;
                 this.description = description;
                 this.status = status;
                 this.priority = priority;
                 this.employeeId = employeeId;
+                this.clientEmail = clientEmail;
         }
 
         public UUID getId() {
@@ -68,5 +70,13 @@ public class TicketDto {
 
         public void setEmployeeId(UUID employeeId) {
                 this.employeeId = employeeId;
+        }
+
+        public String getClientEmail() {
+                return clientEmail;
+        }
+
+        public void setClientEmail(String clientEmail) {
+                this.clientEmail = clientEmail;
         }
 }

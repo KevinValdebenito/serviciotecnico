@@ -2,6 +2,7 @@ package com.serviciotecnico.ticket.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
@@ -36,7 +37,7 @@ public class TicketServiceImpl implements TicketService {
                 .filter(ticket -> priority == null || priority.isBlank()
                         || ticket.getPriority().equalsIgnoreCase(priority))
                 .filter(ticket -> employeeId == null
-                        || ticket.getEmployeeId().equals(employeeId))
+                        || Objects.equals(ticket.getEmployeeId(), employeeId))
                 .map(this::convertToDto)
                 .toList();
     }
@@ -59,7 +60,7 @@ public class TicketServiceImpl implements TicketService {
         existingTicket.setStatus(ticketDto.getStatus());
         existingTicket.setPriority(ticketDto.getPriority());
         existingTicket.setEmployeeId(ticketDto.getEmployeeId());
-
+        existingTicket.setClientEmail(ticketDto.getClientEmail());
         Ticket updatedTicket = ticketRepository.save(existingTicket);
 
         return convertToDto(updatedTicket);
@@ -91,7 +92,8 @@ public class TicketServiceImpl implements TicketService {
                 ticket.getDescription(),
                 ticket.getStatus(),
                 ticket.getPriority(),
-                ticket.getEmployeeId()
+                ticket.getEmployeeId(),
+                ticket.getClientEmail()
         );
     }
 
@@ -104,7 +106,7 @@ public class TicketServiceImpl implements TicketService {
         ticket.setStatus(ticketDto.getStatus());
         ticket.setPriority(ticketDto.getPriority());
         ticket.setEmployeeId(ticketDto.getEmployeeId());
-
+        ticket.setClientEmail(ticketDto.getClientEmail());
         return ticket;
     }
 }

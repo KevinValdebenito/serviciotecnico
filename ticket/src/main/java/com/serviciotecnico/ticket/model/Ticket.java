@@ -30,13 +30,16 @@ public class Ticket {
     @Column(name = "priority", nullable = false)
     private String priority;
 
-    @Column(name = "employee_id", nullable = false)
+    @Column(name = "employee_id", nullable = true)
     private UUID employeeId;
+
+    @Column(name = "client_email")
+    private String clientEmail;
 
     public Ticket() {
     }
 
-    public Ticket(String title, String description, String status, String priority, UUID employeeId) {
+    public Ticket(String title, String description, String status, String priority, UUID employeeId, String clientEmail) {
         this.title = title;
         this.description = description;
         this.status = status;
@@ -90,5 +93,13 @@ public class Ticket {
 
     public void setEmployeeId(UUID employeeId) {
         this.employeeId = employeeId;
+    }
+
+    public String getClientEmail() {
+        return clientEmail;
+    }
+
+    public void setClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
     }
 }
