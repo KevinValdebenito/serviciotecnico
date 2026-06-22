@@ -20,13 +20,13 @@ public class TicketBffController {
 
     private final RestClient restClient;
 
-    @Value("${TICKET_SERVICE_URL:http://localhost:8081}")
+    @Value("${ticket.service.url}")
     private String ticketServiceUrl;
 
-    @Value("${CLIENTE_SERVICE_URL:http://localhost:8083}")
+    @Value("${cliente.service.url}")
     private String clienteServiceUrl;
 
-    @Value("${TECNICO_SERVICE_URL:http://localhost:8084}")
+    @Value("${tecnico.service.url}")
     private String tecnicoServiceUrl;
 
     public TicketBffController(){
