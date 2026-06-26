@@ -41,12 +41,12 @@ public class AuthService {
 
         String passwordHash = passwordEncoder.encode(request.password());
 
-        Empleado empleado = Empleado.builder()
-        .username(request.username())
-        .email(request.email())
-        .passwordHash(passwordHash)
-        .rol(request.rol())
-        .build();
+        Empleado empleado = new Empleado(
+            request.username(),
+            request.email(),
+            passwordHash,
+            request.rol()
+        );
 
         empleadoRepository.save(empleado);
 

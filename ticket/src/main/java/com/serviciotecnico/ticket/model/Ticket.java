@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 public class Ticket {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, unique = true)
     private UUID id;
 
@@ -45,6 +45,7 @@ public class Ticket {
         this.status = status;
         this.priority = priority;
         this.employeeId = employeeId;
+        this.clientEmail = clientEmail;
     }
 
     public UUID getId() {

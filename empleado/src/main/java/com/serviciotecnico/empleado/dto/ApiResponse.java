@@ -1,7 +1,5 @@
 package com.serviciotecnico.empleado.dto;
 
-import org.flywaydb.core.api.ErrorDetails;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

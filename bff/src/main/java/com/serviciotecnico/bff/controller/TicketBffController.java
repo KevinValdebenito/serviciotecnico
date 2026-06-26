@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.GetMapping; 
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,14 +20,14 @@ public class TicketBffController {
 
     private final RestClient restClient;
 
-    @Value("${TICKET_SERVICE_URL:http://localhost:8081}")
+    @Value("${TICKET_SERVICE_URL:http://localhost:8082}")
     private String ticketServiceUrl;
 
     @Value("${CLIENTE_SERVICE_URL:http://localhost:8083}")
     private String clienteServiceUrl;
 
-    @Value("${TECNICO_SERVICE_URL:http://localhost:8084}")
-    private String tecnicoServiceUrl;
+    @Value("${EMPLEADO_SERVICE_URL:http://localhost:8081}")
+    private String empleadoServiceUrl;
 
     public TicketBffController(){
         this.restClient = RestClient.create();
@@ -68,11 +68,19 @@ public class TicketBffController {
         }
 
         if (ticketBase.getEmployeeId() != null) {
-             resumen.setNombreTecnico("Técnico ID: " + ticketBase.getEmployeeId().toString().substring(0,8) + "...");
+            try {
+                com.serviciotecnico.bff.dto.EmpleadoDTO empleado = restClient.get()
+                    .uri(empleadoServiceUrl + "/api/empleados/" + ticketBase.getEmployeeId())
+                    .retrieve()
+                    .body(com.serviciotecnico.bff.dto.EmpleadoDTO.class);
+                
+                resumen.setNombreTecnico(empleado.getUsername());
+            } catch (Exception e) {
+                resumen.setNombreTecnico("Técnico no encontrado en BD");
+            }
         } else {
-             resumen.setNombreTecnico("Sin asignar");
+            resumen.setNombreTecnico("Técnico no asignado");
         }
-
         return ResponseEntity.ok(resumen);
     }
 }

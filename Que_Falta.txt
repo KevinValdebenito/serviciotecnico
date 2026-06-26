@@ -1,6 +1,7 @@
 Cosas Faltante
 --------------------------------------------------
+
 -Hacer los endpoint correspondiente en el postman.
--Terminar de hacer el Auth completo.
+-Terminar de hacer el Auth completo. 
 -Rehacer el README.
 -Hacer y poner los mapas conceptuales.
