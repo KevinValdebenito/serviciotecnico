@@ -20,13 +20,13 @@ public class TicketBffController {
 
     private final RestClient restClient;
 
-    @Value("${TICKET_SERVICE_URL:http://localhost:8081}")
+    @Value("${ticket.service.url}")
     private String ticketServiceUrl;
 
     @Value("${cliente.service.url}")
-    private String clienteServiceUrl;
+    private String clienteServiceUrl; 
 
-    @Value("${TECNICO_SERVICE_URL:http://localhost:8084}")
+    @Value("${tecnico.service.url}")
     private String tecnicoServiceUrl;
 
     public TicketBffController(){
@@ -70,7 +70,7 @@ public class TicketBffController {
         if (ticketBase.getEmployeeId() != null) {
             try {
                 com.serviciotecnico.bff.dto.EmpleadoDTO empleado = restClient.get()
-                    .uri(empleadoServiceUrl + "/api/empleados/" + ticketBase.getEmployeeId())
+                    .uri(tecnicoServiceUrl + "/api/empleados/" + ticketBase.getEmployeeId())
                     .retrieve()
                     .body(com.serviciotecnico.bff.dto.EmpleadoDTO.class);
                 
