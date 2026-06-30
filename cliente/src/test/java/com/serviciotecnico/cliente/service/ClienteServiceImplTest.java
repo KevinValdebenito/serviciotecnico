@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.serviciotecnico.cliente.dto.ClienteDto;
 import com.serviciotecnico.cliente.entity.Cliente;
@@ -66,7 +67,8 @@ class ClienteServiceImplTest {
         when(clienteRepository.findById(email)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(RuntimeException.class, () -> clienteService.getClienteByEmail(email));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> clienteService.getClienteByEmail(email));
+        assertEquals("Cliente no encontrado con email: " + email, exception.getReason());
     }
 
     @Test
@@ -117,5 +119,27 @@ class ClienteServiceImplTest {
 
         // Assert
         verify(clienteRepository).delete(cliente);
+    }
+
+    @Test
+    void updateCliente_shouldThrowWhenNotExists() {
+        String email = "noexiste@correo.com";
+        ClienteDto inputDto = new ClienteDto(email, "12.345.678-9", "Kevin", "912345678", "Santiago");
+
+        when(clienteRepository.findById(email)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> clienteService.updateCliente(email, inputDto));
+
+        assertEquals("Cliente no encontrado con email: " + email, exception.getReason());
+    }
+
+    @Test
+    void deleteCliente_shouldThrowWhenNotExists() {
+        String email = "noexiste@correo.com";
+        when(clienteRepository.findById(email)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> clienteService.deleteCliente(email));
+
+        assertEquals("Cliente no encontrado con email: " + email, exception.getReason());
     }
 }

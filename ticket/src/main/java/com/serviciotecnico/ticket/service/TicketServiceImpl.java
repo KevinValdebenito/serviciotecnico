@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Objects;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.serviciotecnico.ticket.dto.TicketDto;
 import com.serviciotecnico.ticket.model.Ticket;
@@ -22,7 +24,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketDto getTicketById(UUID id) {
         Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
         return convertToDto(ticket);
     }
@@ -53,7 +55,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketDto updateTicket(UUID id, TicketDto ticketDto) {
         Ticket existingTicket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
         existingTicket.setTitle(ticketDto.getTitle());
         existingTicket.setDescription(ticketDto.getDescription());
@@ -69,7 +71,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public void deleteTicket(UUID id) {
         Ticket existingTicket = ticketRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
         ticketRepository.delete(existingTicket);
     }

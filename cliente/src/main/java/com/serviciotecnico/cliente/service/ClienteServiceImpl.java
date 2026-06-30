@@ -2,7 +2,9 @@ package com.serviciotecnico.cliente.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.serviciotecnico.cliente.dto.ClienteDto;
 import com.serviciotecnico.cliente.entity.Cliente;
@@ -27,7 +29,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public ClienteDto getClienteByEmail(String email) {
         Cliente cliente = clienteRepository.findById(email)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con email: " + email));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado con email: " + email));
         return convertToDto(cliente);
     }
 
@@ -41,7 +43,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public ClienteDto updateCliente(String email, ClienteDto clienteDto) {
         Cliente existingCliente = clienteRepository.findById(email)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con email: " + email));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado con email: " + email));
 
         existingCliente.setRut(clienteDto.rut());
         existingCliente.setNombreCompleto(clienteDto.nombreCompleto());
@@ -55,7 +57,7 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public void deleteCliente(String email) {
         Cliente existingCliente = clienteRepository.findById(email)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con email: " + email));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado con email: " + email));
         clienteRepository.delete(existingCliente);
     }
 

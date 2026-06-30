@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
-import com.serviciotecnico.empleado.client.TicketClient;
 import com.serviciotecnico.empleado.dto.ApiResponse;
 import com.serviciotecnico.empleado.dto.EmpleadoResponse;
 import com.serviciotecnico.empleado.dto.TicketDto;
@@ -23,9 +22,6 @@ import com.serviciotecnico.empleado.service.EmpleadoService;
 
 @ExtendWith(MockitoExtension.class)
 class EmpleadoControllerTest {
-
-    @Mock
-    private TicketClient ticketClient;
 
     @Mock
     private EmpleadoService empleadoService;
@@ -55,7 +51,7 @@ class EmpleadoControllerTest {
             new TicketDto(UUID.randomUUID(), "Problema de red", "Sin conexión", "Abierto", "Alta", UUID.randomUUID())
         );
 
-        when(ticketClient.getAllTickets()).thenReturn(tickets);
+        when(empleadoService.getTickets(null, null)).thenReturn(tickets);
 
         ResponseEntity<ApiResponse<List<TicketDto>>> response = empleadoController.getAllTickets(null, null);
 
@@ -63,7 +59,7 @@ class EmpleadoControllerTest {
         assertNotNull(response.getBody());
         assertEquals(true, response.getBody().success());
         assertEquals(1, response.getBody().data().size());
-        verify(ticketClient).getAllTickets();
+        verify(empleadoService).getTickets(null, null);
     }
 
     @Test
@@ -72,7 +68,7 @@ class EmpleadoControllerTest {
             new TicketDto(UUID.randomUUID(), "Cambio de pantalla", "Pantalla rota", "Abierto", "Media", UUID.randomUUID())
         );
 
-        when(ticketClient.searchTickets("pantalla", null)).thenReturn(tickets);
+        when(empleadoService.getTickets("pantalla", null)).thenReturn(tickets);
 
         ResponseEntity<ApiResponse<List<TicketDto>>> response = empleadoController.getAllTickets("pantalla", null);
 
@@ -80,7 +76,7 @@ class EmpleadoControllerTest {
         assertNotNull(response.getBody());
         assertEquals(true, response.getBody().success());
         assertEquals(1, response.getBody().data().size());
-        verify(ticketClient).searchTickets("pantalla", null);
+        verify(empleadoService).getTickets("pantalla", null);
     }
 
     @Test
@@ -89,7 +85,7 @@ class EmpleadoControllerTest {
             new TicketDto(UUID.randomUUID(), "Cambio de teclado", "Tecla dañada", "Cerrado", "Baja", UUID.randomUUID())
         );
 
-        when(ticketClient.searchTickets(null, "Cerrado")).thenReturn(tickets);
+        when(empleadoService.getTickets(null, "Cerrado")).thenReturn(tickets);
 
         ResponseEntity<ApiResponse<List<TicketDto>>> response = empleadoController.getAllTickets(null, "Cerrado");
 
@@ -97,6 +93,6 @@ class EmpleadoControllerTest {
         assertNotNull(response.getBody());
         assertEquals(true, response.getBody().success());
         assertEquals(1, response.getBody().data().size());
-        verify(ticketClient).searchTickets(null, "Cerrado");
+        verify(empleadoService).getTickets(null, "Cerrado");
     }
 }

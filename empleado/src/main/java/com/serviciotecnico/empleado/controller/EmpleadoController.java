@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.serviciotecnico.empleado.client.TicketClient;
 import com.serviciotecnico.empleado.dto.ApiResponse;
 import com.serviciotecnico.empleado.dto.EmpleadoResponse;
 import com.serviciotecnico.empleado.dto.TicketDto;
@@ -20,11 +19,9 @@ import com.serviciotecnico.empleado.service.EmpleadoService;
 @RequestMapping("/api/empleados")
 public class EmpleadoController {
 
-    final TicketClient ticketClient;
     final EmpleadoService empleadoService;
 
-    public EmpleadoController(TicketClient ticketClient, EmpleadoService empleadoService) {
-        this.ticketClient = ticketClient;
+    public EmpleadoController(EmpleadoService empleadoService) {
         this.empleadoService = empleadoService;
     }
 
@@ -37,14 +34,7 @@ public class EmpleadoController {
     public ResponseEntity<ApiResponse<List<TicketDto>>> getAllTickets(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String status) {
-        List<TicketDto> tickets;
-        boolean hasFilters = (name != null && !name.isBlank()) || (status != null && !status.isBlank());
-
-        if (hasFilters) {
-            tickets = ticketClient.searchTickets(name, status);
-        } else {
-            tickets = ticketClient.getAllTickets();
-        }
+        List<TicketDto> tickets = empleadoService.getTickets(name, status);
 
         ApiResponse<List<TicketDto>> response = new ApiResponse<>(true, tickets);
         return ResponseEntity.ok(response);
