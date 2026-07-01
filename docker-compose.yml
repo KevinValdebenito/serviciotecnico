@@ -49,8 +49,10 @@ services:
       - DB_URL=jdbc:postgresql://db-empleado:5432/employee_db
       - DB_USERNAME=postgres
       - DB_PASSWORD=root
+      - APITICKET_URL=http://app-ticket:8082/api
     depends_on:
       - db-empleado
+      - app-ticket
 
   app-ticket:
     build: ./ticket
@@ -95,9 +97,10 @@ services:
       - "8080:8080"
     environment:
       - AUTH_SERVICE_URL=http://app-auth:7778
-      - EMPLEADO_SERVICE_URL=http://app-empleado:8081
+      - TECNICO_SERVICE_URL=http://app-empleado:8081
       - TICKET_SERVICE_URL=http://app-ticket:8082
       - CLIENTE_SERVICE_URL=http://app-cliente:8083
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
       - app-auth
       - app-empleado
