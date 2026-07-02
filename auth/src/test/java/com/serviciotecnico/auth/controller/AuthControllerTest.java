@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.serviciotecnico.auth.controller.AuthController;
 import com.serviciotecnico.auth.dto.AuthResponse;
 import com.serviciotecnico.auth.dto.LoginRequest;
 import com.serviciotecnico.auth.dto.RegisterRequest;
