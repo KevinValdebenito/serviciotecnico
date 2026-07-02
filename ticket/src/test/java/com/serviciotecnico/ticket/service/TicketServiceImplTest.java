@@ -10,15 +10,14 @@ import static org.mockito.Mockito.never;
 
 import java.util.Optional;
 import java.util.UUID;
-
 import java.util.List;
-
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.serviciotecnico.ticket.dto.TicketDto;
 import com.serviciotecnico.ticket.model.Ticket;
@@ -44,8 +43,8 @@ class TicketServiceImplTest {
         TicketDto result = ticketService.getTicketById(ticketId);
 
         assertNotNull(result);
-        assertEquals(ticketId, result.getId());
-        assertEquals("Cambio de teclado", result.getTitle());
+        assertEquals(ticketId, result.id());
+        assertEquals("Cambio de teclado", result.title());
     }
 
     @Test
@@ -54,21 +53,21 @@ class TicketServiceImplTest {
         UUID randomId = UUID.randomUUID();
         when(ticketRepository.findById(randomId)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(
-            RuntimeException.class,
+        // Capturamos la ResponseStatusException específica
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
             () -> ticketService.getTicketById(randomId)
         );
 
-        assertEquals("Ticket not found with id: " + randomId, exception.getMessage());
+        // Usamos getReason() en lugar de getMessage() para ignorar el prefijo del código HTTP
+        assertEquals("Ticket not found with id: " + randomId, exception.getReason());
     }
 
     @Test
     void createTicket_shouldSaveAndReturnDto() {
         TicketServiceImpl ticketService = new TicketServiceImpl(ticketRepository);
         
-        TicketDto inputDto = new TicketDto();
-        inputDto.setTitle("Limpieza de ventiladores");
-        inputDto.setClientEmail("cliente@mail.com");
+        TicketDto inputDto = new TicketDto(null, "Limpieza de ventiladores", null, null, null, null, "cliente@mail.com");
 
         when(ticketRepository.save(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket toSave = invocation.getArgument(0);
@@ -78,8 +77,8 @@ class TicketServiceImplTest {
 
         TicketDto result = ticketService.createTicket(inputDto);
 
-        assertNotNull(result.getId()); 
-        assertEquals("Limpieza de ventiladores", result.getTitle());
+        assertNotNull(result.id()); 
+        assertEquals("Limpieza de ventiladores", result.title());
 
         ArgumentCaptor<Ticket> captor = ArgumentCaptor.forClass(Ticket.class);
         verify(ticketRepository).save(captor.capture());
@@ -110,7 +109,7 @@ class TicketServiceImplTest {
 
         // 3. Assert
         assertEquals(2, result.size());
-        assertEquals("Ticket 1", result.get(0).getTitle());
+        assertEquals("Ticket 1", result.get(0).title());
     }
 
     @Test
@@ -130,12 +129,12 @@ class TicketServiceImplTest {
         
         when(ticketRepository.findAll()).thenReturn(List.of(ticketAsus, ticketHP));
 
-        // 2. Act: Filtramos solo los que digan "Asus" y estén en estado "Pendiente"
+        // 2. Act
         List<TicketDto> result = ticketService.searchTickets("Asus", "Pendiente", null, null);
 
         // 3. Assert
         assertEquals(1, result.size());
-        assertEquals("Cambio de pantalla Asus", result.get(0).getTitle());
+        assertEquals("Cambio de pantalla Asus", result.get(0).title());
     }
 
     // ==========================================
@@ -152,19 +151,17 @@ class TicketServiceImplTest {
         existingTicket.setId(ticketId);
         existingTicket.setTitle("Titulo Viejo");
 
-        TicketDto updateData = new TicketDto();
-        updateData.setTitle("Titulo Nuevo");
-        updateData.setStatus("En Curso");
+        TicketDto updateData = new TicketDto(ticketId, "Titulo Nuevo", null, "En Curso", null, null, null);
 
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(existingTicket));
-        when(ticketRepository.save(any(Ticket.class))).thenAnswer(i -> i.getArgument(0)); // Devuelve el mismo objeto que guardó
+        when(ticketRepository.save(any(Ticket.class))).thenAnswer(i -> i.getArgument(0));
 
         // 2. Act
         TicketDto result = ticketService.updateTicket(ticketId, updateData);
 
         // 3. Assert
-        assertEquals("Titulo Nuevo", result.getTitle());
-        assertEquals("En Curso", result.getStatus());
+        assertEquals("Titulo Nuevo", result.title());
+        assertEquals("En Curso", result.status());
     }
 
     @Test
@@ -172,13 +169,13 @@ class TicketServiceImplTest {
         // 1. Arrange
         TicketServiceImpl ticketService = new TicketServiceImpl(ticketRepository);
         UUID randomId = UUID.randomUUID();
-        TicketDto updateData = new TicketDto();
+        TicketDto updateData = new TicketDto(randomId, null, null, null, null, null, null);
         
         when(ticketRepository.findById(randomId)).thenReturn(Optional.empty());
 
         // 2 & 3. Act & Assert
-        assertThrows(RuntimeException.class, () -> ticketService.updateTicket(randomId, updateData));
-        verify(ticketRepository, never()).save(any()); // Aseguramos que nunca intentó guardarlo si no existe
+        assertThrows(ResponseStatusException.class, () -> ticketService.updateTicket(randomId, updateData));
+        verify(ticketRepository, never()).save(any());
     }
 
     // ==========================================
@@ -200,7 +197,7 @@ class TicketServiceImplTest {
         ticketService.deleteTicket(ticketId);
 
         // 3. Assert
-        verify(ticketRepository).delete(existingTicket); // Verificamos que se llamó al método delete del repositorio
+        verify(ticketRepository).delete(existingTicket);
     }
 
     @Test
@@ -212,7 +209,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(randomId)).thenReturn(Optional.empty());
 
         // 2 & 3. Act & Assert
-        assertThrows(RuntimeException.class, () -> ticketService.deleteTicket(randomId));
+        assertThrows(ResponseStatusException.class, () -> ticketService.deleteTicket(randomId));
         verify(ticketRepository, never()).delete(any());
     }
 }

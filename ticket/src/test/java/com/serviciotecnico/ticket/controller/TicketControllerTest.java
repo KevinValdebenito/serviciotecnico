@@ -26,8 +26,7 @@ class TicketControllerTest {
     @Test
     void getAllTickets_shouldReturnOKWithAllTickets_whenNoFilters(){
         TicketController controller = new TicketController(ticketService);
-        TicketDto mockTicket = new TicketDto();
-        mockTicket.setTitle("Limpieza general");
+        TicketDto mockTicket = new TicketDto(null, "Limpieza general", null, null, null, null, null);
 
         when(ticketService.getAllTickets()).thenReturn(List.of(mockTicket));
 
@@ -36,14 +35,13 @@ class TicketControllerTest {
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
-        assertEquals("Limpieza general", result.getBody().get(0).getTitle());
+        assertEquals("Limpieza general", result.getBody().get(0).title());
     }
 
     @Test
     void getAllTickets_shouldReturnOKWithFilteredTickets_whenFiltersExist(){
         TicketController controller = new TicketController(ticketService);
-        TicketDto mockTicket = new TicketDto();
-        mockTicket.setTitle("Formateo Windows");
+        TicketDto mockTicket = new TicketDto(null, "Formateo Windows", null, null, null, null, null);
 
         when(ticketService.searchTickets("Windows", null, null, null)).thenReturn(List.of(mockTicket));
 
@@ -52,15 +50,14 @@ class TicketControllerTest {
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
         assertEquals(1, result.getBody().size());
-        assertEquals("Formateo Windows", result.getBody().get(0).getTitle());
+        assertEquals("Formateo Windows", result.getBody().get(0).title());
     }
 
     @Test
     void getTicketById_shouldReturnOK(){
         TicketController controller = new TicketController(ticketService);
         UUID id = UUID.randomUUID();
-        TicketDto mockTicket = new TicketDto();
-        mockTicket.setId(id);
+        TicketDto mockTicket = new TicketDto(id, null, null, null, null, null, null);
 
         when(ticketService.getTicketById(id)).thenReturn(mockTicket);
 
@@ -68,18 +65,15 @@ class TicketControllerTest {
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
-        assertEquals(id, result.getBody().getId());
+        assertEquals(id, result.getBody().id());
     }
 
     @Test
     void createTicket_shouldReturnCreated() {
         TicketController controller = new TicketController(ticketService);
-        TicketDto inputDto = new TicketDto();
-        inputDto.setTitle("Nuevo Problema");
+        TicketDto inputDto = new TicketDto(null, "Nuevo Problema", null, null, null, null, null);
 
-        TicketDto saveDto = new TicketDto();
-        saveDto.setId(UUID.randomUUID());
-        saveDto.setTitle("Nuevo Problema");
+        TicketDto saveDto = new TicketDto(UUID.randomUUID(), "Nuevo Problema", null, null, null, null, null);
 
         when(ticketService.createTicket(inputDto)).thenReturn(saveDto);
 
@@ -87,15 +81,14 @@ class TicketControllerTest {
 
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
         assertNotNull(result.getBody());
-        assertEquals("Nuevo Problema", result.getBody().getTitle());
+        assertEquals("Nuevo Problema", result.getBody().title());
     }
 
     @Test
     void updateTicket_shouldReturnOK() {
         TicketController controller = new TicketController(ticketService);
         UUID id = UUID.randomUUID();
-        TicketDto inputDto = new TicketDto();
-        inputDto.setTitle("Actualizado");
+        TicketDto inputDto = new TicketDto(null, "Actualizado", null, null, null, null, null);
 
         when(ticketService.updateTicket(id, inputDto)).thenReturn(inputDto);
 
@@ -103,7 +96,7 @@ class TicketControllerTest {
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertNotNull(result.getBody());
-        assertEquals("Actualizado", result.getBody().getTitle());
+        assertEquals("Actualizado", result.getBody().title());
     }
 
     @Test

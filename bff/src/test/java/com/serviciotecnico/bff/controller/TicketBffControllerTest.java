@@ -28,17 +28,16 @@ class TicketBffControllerTest {
     @Test
     void shouldDelegateToServiceWhenResumenIsRequested() {
         UUID idTicket = UUID.randomUUID();
-        TicketResumenDTO resumen = new TicketResumenDTO();
-        resumen.setIdTicket(idTicket);
-        resumen.setTitulo("Pantalla rota");
+        // Usamos el constructor del record, pasando null a los campos que no validamos en este test
+        TicketResumenDTO resumen = new TicketResumenDTO(idTicket, "Pantalla rota", null, null, null, null);
 
         when(ticketResumenService.obtenerResumenCompleto(idTicket)).thenReturn(resumen);
 
         TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket).getBody();
 
         assertNotNull(result);
-        assertEquals(idTicket, result.getIdTicket());
-        assertEquals("Pantalla rota", result.getTitulo());
+        assertEquals(idTicket, result.idTicket()); // Método de acceso sin "get"
+        assertEquals("Pantalla rota", result.titulo());
         verify(ticketResumenService).obtenerResumenCompleto(idTicket);
     }
 
@@ -46,15 +45,13 @@ class TicketBffControllerTest {
     void shouldReturnServiceResponseAsOk() {
         UUID idTicket = UUID.randomUUID();
 
-        TicketResumenDTO resumen = new TicketResumenDTO();
-        resumen.setIdTicket(idTicket);
-        resumen.setNombreCliente("Cliente Default");
+        TicketResumenDTO resumen = new TicketResumenDTO(idTicket, null, null, "Cliente Default", null, null);
 
         when(ticketResumenService.obtenerResumenCompleto(idTicket)).thenReturn(resumen);
 
         TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket).getBody();
 
         assertNotNull(result);
-        assertEquals("Cliente Default", result.getNombreCliente());
+        assertEquals("Cliente Default", result.nombreCliente());
     }
 }

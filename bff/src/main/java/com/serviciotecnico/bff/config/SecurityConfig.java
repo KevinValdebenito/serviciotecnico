@@ -28,7 +28,7 @@ public class SecurityConfig {
 		return http
 			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedEntryPoint()))
+			.exceptionHandling(exception -> exception.authenticationEntryPoint(forbiddenEntryPoint()))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/login", "/register").permitAll()
 				.anyRequest().authenticated()
@@ -38,7 +38,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthenticationEntryPoint unauthorizedEntryPoint() {
-		return (request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+	public AuthenticationEntryPoint forbiddenEntryPoint() {
+		return (request, response, authException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
 	}
 }

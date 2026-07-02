@@ -33,71 +33,48 @@ class BffDtoTest {
 
     @Test
     void shouldExposeTicketDtoValues() {
-        TicketDTO ticket = new TicketDTO();
         UUID id = UUID.randomUUID();
         UUID employeeId = UUID.randomUUID();
+        
+        TicketDTO ticket = new TicketDTO(id, "Pantalla rota", null, "Abierto", "cliente@mail.com", employeeId, null, null);
 
-        ticket.setId(id);
-        ticket.setTitle("Pantalla rota");
-        ticket.setStatus("Abierto");
-        ticket.setPriority("Alta");
-        ticket.setClientEmail("cliente@mail.com");
-        ticket.setEmployeeId(employeeId);
-
-        assertEquals(id, ticket.getId());
-        assertEquals("Pantalla rota", ticket.getTitle());
-        assertEquals("Abierto", ticket.getStatus());
-        assertEquals("Alta", ticket.getPriority());
-        assertEquals("cliente@mail.com", ticket.getClientEmail());
-        assertEquals(employeeId, ticket.getEmployeeId());
+        assertEquals(id, ticket.id());
+        assertEquals("Pantalla rota", ticket.title());
+        assertEquals("Abierto", ticket.status());
+        assertEquals("cliente@mail.com", ticket.clientEmail());
+        assertEquals(employeeId, ticket.employeeId());
     }
 
     @Test
     void shouldExposeEmpleadoDtoValues() {
-        EmpleadoDTO empleado = new EmpleadoDTO();
         UUID id = UUID.randomUUID();
+        EmpleadoDTO empleado = new EmpleadoDTO(id, "tecnico1", null, null);
 
-        empleado.setId(id);
-        empleado.setUsername("tecnico1");
-
-        assertEquals(id, empleado.getId());
-        assertEquals("tecnico1", empleado.getUsername());
+        assertEquals(id, empleado.id());
+        assertEquals("tecnico1", empleado.username());
     }
 
     @Test
     void shouldExposeClienteDtoValues() {
-        ClienteDTO cliente = new ClienteDTO();
+        ClienteDTO cliente = new ClienteDTO("cliente@mail.com", "11.222.333-4", "Cliente Prueba", "912345678", "Santiago");
 
-        cliente.setEmail("cliente@mail.com");
-        cliente.setRut("11.222.333-4");
-        cliente.setNombreCompleto("Cliente Prueba");
-        cliente.setTelefono("912345678");
-        cliente.setDireccion("Santiago");
-
-        assertEquals("cliente@mail.com", cliente.getEmail());
-        assertEquals("11.222.333-4", cliente.getRut());
-        assertEquals("Cliente Prueba", cliente.getNombreCompleto());
-        assertEquals("912345678", cliente.getTelefono());
-        assertEquals("Santiago", cliente.getDireccion());
+        assertEquals("cliente@mail.com", cliente.email());
+        assertEquals("11.222.333-4", cliente.rut());
+        assertEquals("Cliente Prueba", cliente.nombreCompleto());
+        assertEquals("912345678", cliente.telefono());
+        assertEquals("Santiago", cliente.direccion());
     }
 
     @Test
     void shouldExposeTicketResumenDtoValues() {
-        TicketResumenDTO resumen = new TicketResumenDTO();
         UUID idTicket = UUID.randomUUID();
+        TicketResumenDTO resumen = new TicketResumenDTO(idTicket, "Pantalla rota", "Abierto", "Cliente Prueba", "912345678", "tecnico1");
 
-        resumen.setIdTicket(idTicket);
-        resumen.setTitulo("Pantalla rota");
-        resumen.setEstado("Abierto");
-        resumen.setNombreCliente("Cliente Prueba");
-        resumen.setTelefonoCliente("912345678");
-        resumen.setNombreTecnico("tecnico1");
-
-        assertEquals(idTicket, resumen.getIdTicket());
-        assertEquals("Pantalla rota", resumen.getTitulo());
-        assertEquals("Abierto", resumen.getEstado());
-        assertEquals("Cliente Prueba", resumen.getNombreCliente());
-        assertEquals("912345678", resumen.getTelefonoCliente());
-        assertEquals("tecnico1", resumen.getNombreTecnico());
+        assertEquals(idTicket, resumen.idTicket());
+        assertEquals("Pantalla rota", resumen.titulo());
+        assertEquals("Abierto", resumen.estado());
+        assertEquals("Cliente Prueba", resumen.nombreCliente());
+        assertEquals("912345678", resumen.telefonoCliente());
+        assertEquals("tecnico1", resumen.nombreTecnico());
     }
 }

@@ -34,9 +34,6 @@ public class TicketResumenService {
     }
 
     public TicketResumenDTO obtenerResumenCompleto(UUID idTicket) {
-        TicketResumenDTO resumen = new TicketResumenDTO();
-        resumen.setIdTicket(idTicket);
-
         TicketDTO ticketBase;
         try {
             ticketBase = restClient.get()
@@ -47,39 +44,49 @@ public class TicketResumenService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket no encontrado con id: " + idTicket);
         }
 
-        resumen.setTitulo(ticketBase.getTitle());
-        resumen.setEstado(ticketBase.getStatus());
+        String titulo = ticketBase.title();
+        String estado = ticketBase.status();
 
+        String nombreCliente;
+        String telefonoCliente;
         try {
-            String emailToSearch = (ticketBase.getClientEmail() != null) ? ticketBase.getClientEmail() : "juan.perez@example.com";
+            String emailToSearch = (ticketBase.clientEmail() != null) ? ticketBase.clientEmail() : "juan.perez@example.com";
 
             ClienteDTO cliente = restClient.get()
                 .uri(clienteServiceUrl + "/api/clientes/" + emailToSearch)
                 .retrieve()
                 .body(ClienteDTO.class);
 
-            resumen.setNombreCliente(cliente.getNombreCompleto() + " (Extraído de BD)");
-            resumen.setTelefonoCliente(cliente.getTelefono());
+            nombreCliente = cliente.nombreCompleto() + " (Extraído de BD)";
+            telefonoCliente = cliente.telefono();
         } catch (Exception exception) {
-            resumen.setNombreCliente("Cliente no encontrado en BD");
-            resumen.setTelefonoCliente("N/A");
+            nombreCliente = "Cliente no encontrado en BD";
+            telefonoCliente = "N/A";
         }
 
-        if (ticketBase.getEmployeeId() != null) {
+        String nombreTecnico;
+        if (ticketBase.employeeId() != null) {
             try {
                 EmpleadoDTO empleado = restClient.get()
-                    .uri(tecnicoServiceUrl + "/api/empleados/" + ticketBase.getEmployeeId())
+                    .uri(tecnicoServiceUrl + "/api/empleados/" + ticketBase.employeeId())
                     .retrieve()
                     .body(EmpleadoDTO.class);
 
-                resumen.setNombreTecnico(empleado.getUsername());
+                nombreTecnico = empleado.username();
             } catch (Exception exception) {
-                resumen.setNombreTecnico("Técnico no encontrado en BD");
+                nombreTecnico = "Técnico no encontrado en BD";
             }
         } else {
-            resumen.setNombreTecnico("Técnico no asignado");
+            nombreTecnico = "Técnico no asignado";
         }
 
-        return resumen;
+        return new TicketResumenDTO(
+            idTicket,
+            titulo,
+            estado,
+            nombreCliente,
+            telefonoCliente,
+            nombreTecnico
+        );
     }
 }

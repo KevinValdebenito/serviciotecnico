@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,18 +34,11 @@ class TicketResumenServiceTest {
         UUID idTicket = UUID.randomUUID();
         UUID employeeId = UUID.randomUUID();
 
-        TicketDTO ticket = new TicketDTO();
-        ticket.setTitle("Pantalla rota");
-        ticket.setStatus("Abierto");
-        ticket.setClientEmail("cliente@mail.com");
-        ticket.setEmployeeId(employeeId);
+        TicketDTO ticket = new TicketDTO(idTicket, "Pantalla rota", "Description", "Abierto", "cliente@mail.com", employeeId, LocalDateTime.now(), LocalDateTime.now());
 
-        ClienteDTO cliente = new ClienteDTO();
-        cliente.setNombreCompleto("Cliente Prueba");
-        cliente.setTelefono("912345678");
+        ClienteDTO cliente = new ClienteDTO("cliente@mail.com", "12345678-9", "Cliente Prueba", "912345678", "Direccion");
 
-        EmpleadoDTO empleado = new EmpleadoDTO();
-        empleado.setUsername("tecnico1");
+        EmpleadoDTO empleado = new EmpleadoDTO(employeeId, "tecnico1", "tecnico1@example.com", "TECNICO");
 
         when(restClient.get().uri("http://ticket-service/api/tickets/" + idTicket).retrieve().body(TicketDTO.class)).thenReturn(ticket);
         when(restClient.get().uri("http://cliente-service/api/clientes/cliente@mail.com").retrieve().body(ClienteDTO.class)).thenReturn(cliente);
@@ -52,12 +46,12 @@ class TicketResumenServiceTest {
 
         TicketResumenDTO result = service.obtenerResumenCompleto(idTicket);
 
-        assertEquals(idTicket, result.getIdTicket());
-        assertEquals("Pantalla rota", result.getTitulo());
-        assertEquals("Abierto", result.getEstado());
-        assertEquals("Cliente Prueba (Extraído de BD)", result.getNombreCliente());
-        assertEquals("912345678", result.getTelefonoCliente());
-        assertEquals("tecnico1", result.getNombreTecnico());
+        assertEquals(idTicket, result.idTicket());
+        assertEquals("Pantalla rota", result.titulo());
+        assertEquals("Abierto", result.estado());
+        assertEquals("Cliente Prueba (Extraído de BD)", result.nombreCliente());
+        assertEquals("912345678", result.telefonoCliente());
+        assertEquals("tecnico1", result.nombreTecnico());
     }
 
     @Test
@@ -76,20 +70,16 @@ class TicketResumenServiceTest {
     void shouldUseDefaultClientEmailWhenTicketHasNoClientEmail() {
         UUID idTicket = UUID.randomUUID();
 
-        TicketDTO ticket = new TicketDTO();
-        ticket.setTitle("Pantalla rota");
-        ticket.setStatus("Abierto");
+        TicketDTO ticket = new TicketDTO(idTicket, "Pantalla rota", "Description", "Abierto", null, null, LocalDateTime.now(), LocalDateTime.now());
 
-        ClienteDTO cliente = new ClienteDTO();
-        cliente.setNombreCompleto("Cliente Default");
-        cliente.setTelefono("900000000");
+        ClienteDTO cliente = new ClienteDTO("juan.perez@example.com", "12345678-9", "Cliente Default", "900000000", "Direccion");
 
         when(restClient.get().uri("http://ticket-service/api/tickets/" + idTicket).retrieve().body(TicketDTO.class)).thenReturn(ticket);
         when(restClient.get().uri("http://cliente-service/api/clientes/juan.perez@example.com").retrieve().body(ClienteDTO.class)).thenReturn(cliente);
 
         TicketResumenDTO result = service.obtenerResumenCompleto(idTicket);
 
-        assertEquals("Cliente Default (Extraído de BD)", result.getNombreCliente());
-        assertEquals("Técnico no asignado", result.getNombreTecnico());
+        assertEquals("Cliente Default (Extraído de BD)", result.nombreCliente());
+        assertEquals("Técnico no asignado", result.nombreTecnico());
     }
 }

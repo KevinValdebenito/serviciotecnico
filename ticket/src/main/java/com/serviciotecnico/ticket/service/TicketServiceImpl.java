@@ -57,12 +57,12 @@ public class TicketServiceImpl implements TicketService {
         Ticket existingTicket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
 
-        existingTicket.setTitle(ticketDto.getTitle());
-        existingTicket.setDescription(ticketDto.getDescription());
-        existingTicket.setStatus(ticketDto.getStatus());
-        existingTicket.setPriority(ticketDto.getPriority());
-        existingTicket.setEmployeeId(ticketDto.getEmployeeId());
-        existingTicket.setClientEmail(ticketDto.getClientEmail());
+        existingTicket.setTitle(ticketDto.title());
+        existingTicket.setDescription(ticketDto.description());
+        existingTicket.setStatus(ticketDto.status());
+        existingTicket.setPriority(ticketDto.priority());
+        existingTicket.setEmployeeId(ticketDto.employeeId());
+        existingTicket.setClientEmail(ticketDto.clientEmail());
         Ticket updatedTicket = ticketRepository.save(existingTicket);
 
         return convertToDto(updatedTicket);
@@ -102,13 +102,13 @@ public class TicketServiceImpl implements TicketService {
     private Ticket convertToEntity(TicketDto ticketDto) {
         Ticket ticket = new Ticket();
 
-        ticket.setId(ticketDto.getId());
-        ticket.setTitle(ticketDto.getTitle());
-        ticket.setDescription(ticketDto.getDescription());
-        ticket.setStatus(ticketDto.getStatus());
-        ticket.setPriority(ticketDto.getPriority());
-        ticket.setEmployeeId(ticketDto.getEmployeeId());
-        ticket.setClientEmail(ticketDto.getClientEmail());
+        ticket.setId(ticketDto.id());
+        ticket.setTitle(ticketDto.title());
+        ticket.setDescription(ticketDto.description());
+        ticket.setStatus(ticketDto.status());
+        ticket.setPriority(ticketDto.priority());
+        ticket.setEmployeeId(ticketDto.employeeId());
+        ticket.setClientEmail(ticketDto.clientEmail());
         return ticket;
     }
 }
