@@ -1,3 +1,9 @@
+/**
+ * Cliente HTTP encargado de comunicarse con el microservicio de autenticación.
+ *
+ * <p>Permite enviar solicitudes de login y registro desde el BFF
+ * hacia el servicio de autenticación.</p>
+ */
 package com.serviciotecnico.bff.client;
 
 import com.serviciotecnico.bff.dto.AuthResponse;

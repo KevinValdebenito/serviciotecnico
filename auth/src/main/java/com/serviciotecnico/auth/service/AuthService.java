@@ -1,3 +1,9 @@
+/**
+ * Servicio encargado de manejar la lógica de autenticación.
+ *
+ * <p>Valida credenciales, registra nuevos usuarios, codifica contraseñas
+ * y genera tokens JWT para permitir el acceso seguro al sistema.</p>
+ */
 package com.serviciotecnico.auth.service;
 
 import com.serviciotecnico.auth.domain.User;

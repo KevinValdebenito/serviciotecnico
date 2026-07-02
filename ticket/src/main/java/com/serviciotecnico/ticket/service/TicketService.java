@@ -1,3 +1,9 @@
+/**
+ * Implementación del servicio de tickets.
+ *
+ * <p>Contiene la lógica para consultar, crear, actualizar, eliminar
+ * y filtrar tickets dentro del sistema.</p>
+ */
 package com.serviciotecnico.ticket.service;
 
 import java.util.List;

@@ -1,3 +1,9 @@
+/**
+ * Controlador REST encargado de administrar las operaciones sobre clientes.
+ *
+ * <p>Expone endpoints para listar, buscar, crear, actualizar
+ * y eliminar clientes dentro del sistema.</p>
+ */
 package com.serviciotecnico.cliente.controller;
 
 import java.util.List;

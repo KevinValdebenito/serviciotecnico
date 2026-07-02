@@ -1,3 +1,9 @@
+/**
+ * Entidad JPA que representa un ticket de atención del sistema.
+ *
+ * <p>Un ticket contiene información como título, descripción, estado,
+ * prioridad, cliente asociado y empleado asignado.</p>
+ */
 package com.serviciotecnico.ticket.model;
 
 import java.util.UUID;

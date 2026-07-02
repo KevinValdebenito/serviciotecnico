@@ -1,3 +1,9 @@
+/**
+ * Controlador REST encargado de exponer los endpoints de autenticación.
+ *
+ * <p>Permite registrar usuarios e iniciar sesión mediante solicitudes HTTP.
+ * La lógica de negocio es delegada al servicio de autenticación.</p>
+ */
 package com.serviciotecnico.auth.controller;
 
 import com.serviciotecnico.auth.dto.AuthResponse;

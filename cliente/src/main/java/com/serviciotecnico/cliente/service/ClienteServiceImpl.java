@@ -1,3 +1,9 @@
+/**
+ * Implementación del servicio de clientes.
+ *
+ * <p>Contiene la lógica para consultar, crear, actualizar y eliminar clientes,
+ * además de convertir entre entidades JPA y objetos DTO.</p>
+ */
 package com.serviciotecnico.cliente.service;
 
 import java.util.List;

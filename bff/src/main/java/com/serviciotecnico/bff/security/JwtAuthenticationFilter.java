@@ -1,3 +1,10 @@
+/**
+ * Filtro de seguridad encargado de validar tokens JWT en las solicitudes entrantes.
+ *
+ * <p>Intercepta cada petición HTTP, extrae el token desde el encabezado
+ * Authorization y establece la autenticación en el contexto de seguridad
+ * cuando el token es válido.</p>
+ */
 package com.serviciotecnico.bff.security;
 
 import java.io.IOException;

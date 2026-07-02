@@ -1,3 +1,9 @@
+/**
+ * Clase principal del BFF, Backend For Frontend.
+ *
+ * <p>Inicializa el servicio que actúa como punto de entrada
+ * para el frontend y centraliza la comunicación con otros microservicios.</p>
+ */
 package com.serviciotecnico.bff;
 
 import org.springframework.boot.SpringApplication;
