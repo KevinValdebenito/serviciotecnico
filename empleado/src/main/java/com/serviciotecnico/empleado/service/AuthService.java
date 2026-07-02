@@ -1,3 +1,9 @@
+/**
+ * Servicio encargado de la autenticación de empleados.
+ *
+ * <p>Gestiona el registro, inicio de sesión y validación de tokens JWT
+ * para empleados del sistema.</p>
+ */
 package com.serviciotecnico.empleado.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

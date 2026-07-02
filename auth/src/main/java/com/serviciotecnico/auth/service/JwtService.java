@@ -1,3 +1,9 @@
+/**
+ * Servicio encargado de generar tokens JWT para usuarios autenticados.
+ *
+ * <p>Utiliza una clave secreta configurada en la aplicación y define
+ * una expiración para cada token generado.</p>
+ */
 package com.serviciotecnico.auth.service;
 
 import java.nio.charset.StandardCharsets;

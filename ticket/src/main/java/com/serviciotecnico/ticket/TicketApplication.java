@@ -1,3 +1,9 @@
+/**
+ * Clase principal del microservicio de tickets.
+ *
+ * <p>Inicializa la aplicación encargada de gestionar las solicitudes
+ * de atención del sistema de servicio técnico.</p>
+ */
 package com.serviciotecnico.ticket;
 
 import org.springframework.boot.SpringApplication;

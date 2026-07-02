@@ -1,3 +1,9 @@
+/**
+ * Controlador REST del BFF encargado de entregar información resumida de tickets.
+ *
+ * <p>Permite obtener un resumen completo de un ticket, incluyendo datos
+ * del cliente y del técnico asignado.</p>
+ */
 package com.serviciotecnico.bff.controller;
 
 import java.util.UUID;

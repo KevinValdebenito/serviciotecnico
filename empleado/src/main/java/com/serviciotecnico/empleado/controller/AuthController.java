@@ -1,3 +1,8 @@
+/**
+ * Controlador REST encargado de la autenticación de empleados.
+ *
+ * <p>Permite registrar empleados, iniciar sesión y validar tokens JWT.</p>
+ */
 package com.serviciotecnico.empleado.controller;
 
 import org.springframework.http.HttpStatus;

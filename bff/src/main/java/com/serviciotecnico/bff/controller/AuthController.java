@@ -1,3 +1,9 @@
+/**
+ * Controlador REST del BFF encargado de exponer endpoints de autenticación.
+ *
+ * <p>Recibe las solicitudes del cliente externo y las delega al servicio
+ * del BFF, el cual se comunica con el microservicio de autenticación.</p>
+ */
 package com.serviciotecnico.bff.controller;
 
 import com.serviciotecnico.bff.dto.AuthResponse;

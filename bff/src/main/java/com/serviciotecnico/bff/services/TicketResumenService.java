@@ -1,3 +1,9 @@
+/**
+ * Servicio encargado de construir un resumen completo de un ticket.
+ *
+ * <p>Consulta información desde los microservicios de tickets, clientes
+ * y empleados para entregar una respuesta consolidada al frontend.</p>
+ */
 package com.serviciotecnico.bff.services;
 
 import java.util.UUID;
