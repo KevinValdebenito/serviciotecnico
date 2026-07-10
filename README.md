@@ -199,3 +199,10 @@ Agregar diagramas o mapas conceptuales si son solicitados para la entrega.
 Conclusión
 
 Este proyecto representa una solución inicial pero funcional para la gestión de un servicio técnico. La separación por microservicios permite que cada parte del sistema tenga una responsabilidad clara, facilitando el mantenimiento, las pruebas y futuras mejoras. Además, el uso de Docker y PostgreSQL permite levantar el entorno completo de manera más ordenada y cercana a un escenario real.
+```
+
+### Diagrama de Contenedores (C2)
+![Arquitectura C2](docs/diagrams/DiagramaC2.png)
+
+### Diagrama de Componentes (C3)
+![Arquitectura C3](docs/diagrams/DiagramaC3.png)
