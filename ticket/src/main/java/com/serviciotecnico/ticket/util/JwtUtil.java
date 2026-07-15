@@ -1,4 +1,4 @@
-package com.serviciotecnico.empleado.util;
+package com.serviciotecnico.ticket.util;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -7,22 +7,19 @@ import java.security.NoSuchAlgorithmException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import java.util.Date;
 import javax.crypto.SecretKey;
-import io.jsonwebtoken.Claims;
 
 @Component
 public class JwtUtil {
+
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private long expiration;
-
-    private SecretKey getSigningKey(){
+    private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(sha256(secret));
     }
 
@@ -33,18 +30,6 @@ public class JwtUtil {
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("No fue posible inicializar SHA-256", ex);
         }
-    }
-
-    public String generateToken(String email) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
-
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(getSigningKey())
-                .compact();
     }
 
     public boolean validateToken(String token) {
@@ -84,9 +69,5 @@ public class JwtUtil {
         } catch (JwtException | IllegalArgumentException ex) {
             return null;
         }
-    }
-
-    public long getExpiration(){
-        return expiration;
     }
 }

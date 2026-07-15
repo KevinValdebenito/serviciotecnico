@@ -23,13 +23,20 @@ public class JwtTokenService {
 	}
 
 	public String extractSubject(String token) {
-		Claims claims = Jwts.parser()
+		return extractClaims(token).getSubject();
+	}
+
+	public String extractRol(String token) {
+		Object rol = extractClaims(token).get("rol");
+		return rol != null ? rol.toString() : null;
+	}
+
+	private Claims extractClaims(String token) {
+		return Jwts.parser()
 			.verifyWith(signingKey)
 			.build()
 			.parseSignedClaims(token)
 			.getPayload();
-
-		return claims.getSubject();
 	}
 
 	private byte[] sha256(String value) {

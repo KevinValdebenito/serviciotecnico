@@ -1,3 +1,6 @@
-*
-!build/libs/*.jar
-build/libs/*-plain.jar
+build/
+.gradle/
+*.log
+.git/
+.idea/
+*.iml

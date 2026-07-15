@@ -11,30 +11,12 @@ import org.junit.jupiter.api.Test;
 class EmpleadoDtoTest {
 
     @Test
-    void testLoginRequest() {
-        LoginRequest request = new LoginRequest("kevin@correo.com", "password123");
-        
-        assertEquals("kevin@correo.com", request.email());
-        assertEquals("password123", request.password());
-    }
-
-    @Test
-    void testRegisterRequest() {
-        RegisterRequest request = new RegisterRequest("kevinval", "password123", "kevin@correo.com", "ADMIN");
+    void testCrearEmpleadoRequest() {
+        CrearEmpleadoRequest request = new CrearEmpleadoRequest("kevinval", "kevin@correo.com", "ADMIN");
         
         assertEquals("kevinval", request.username());
-        assertEquals("password123", request.password());
         assertEquals("kevin@correo.com", request.email());
         assertEquals("ADMIN", request.rol());
-    }
-
-    @Test
-    void testAuthResponse() {
-        AuthResponse response = new AuthResponse("token-secreto-123", 3600L, "kevin@correo.com");
-        
-        assertEquals("token-secreto-123", response.token());
-        assertEquals(3600L, response.expiresIn());
-        assertEquals("kevin@correo.com", response.email());
     }
 
     @Test

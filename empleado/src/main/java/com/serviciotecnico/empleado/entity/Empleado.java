@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "empleado")
 public class Empleado {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -25,9 +25,6 @@ public class Empleado {
 
     @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
-    private String passwordHash;
 
     @Column(nullable = false)
     private String rol;
@@ -41,10 +38,9 @@ public class Empleado {
     public Empleado() {
     }
 
-    public Empleado(String username, String email, String passwordHash, String rol) {
+    public Empleado(String username, String email, String rol) {
         this.username = username;
         this.email = email;
-        this.passwordHash = passwordHash;
         this.rol = rol;
     }
 
@@ -56,9 +52,6 @@ public class Empleado {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
@@ -79,5 +72,4 @@ public class Empleado {
     protected void onUpdate(){
         updatedAt = LocalDateTime.now();
     }
-
 }

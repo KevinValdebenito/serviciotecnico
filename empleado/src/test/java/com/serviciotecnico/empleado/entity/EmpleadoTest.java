@@ -20,24 +20,21 @@ class EmpleadoTest {
         empleado.setId(id);
         empleado.setUsername("kevinval");
         empleado.setEmail("kevin@correo.com");
-        empleado.setPasswordHash("hashedpassword123");
         empleado.setRol("ADMIN");
 
         assertEquals(id, empleado.getId());
         assertEquals("kevinval", empleado.getUsername());
         assertEquals("kevin@correo.com", empleado.getEmail());
-        assertEquals("hashedpassword123", empleado.getPasswordHash());
         assertEquals("ADMIN", empleado.getRol());
     }
 
     @Test
     void shouldCreateEmpleadoWithAllArgsConstructor() {
 
-        Empleado empleado = new Empleado("admin", "admin@correo.com", "pass123", "SUPERADMIN");
+        Empleado empleado = new Empleado("admin", "admin@correo.com", "SUPERADMIN");
 
         assertEquals("admin", empleado.getUsername());
         assertEquals("admin@correo.com", empleado.getEmail());
-        assertEquals("pass123", empleado.getPasswordHash());
         assertEquals("SUPERADMIN", empleado.getRol());
         assertNull(empleado.getId()); 
     }

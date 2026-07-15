@@ -1,17 +1,11 @@
-/**
- * Filtro de seguridad encargado de validar tokens JWT en las solicitudes entrantes.
- *
- * <p>Intercepta cada petición HTTP, extrae el token desde el encabezado
- * Authorization y establece la autenticación en el contexto de seguridad
- * cuando el token es válido.</p>
- */
 package com.serviciotecnico.bff.security;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -45,10 +39,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = authorization.substring(7);
 		try {
 			String subject = jwtTokenService.extractSubject(token);
+			String rol = jwtTokenService.extractRol(token);
+
+			List<SimpleGrantedAuthority> authorities = (rol != null)
+				? List.of(new SimpleGrantedAuthority("ROLE_" + rol))
+				: List.of();
+
 			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
 				subject,
 				null,
-				Collections.emptyList()
+				authorities
 			);
 			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 			SecurityContextHolder.getContext().setAuthentication(authentication);

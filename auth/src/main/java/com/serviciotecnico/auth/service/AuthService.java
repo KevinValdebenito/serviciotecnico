@@ -1,9 +1,3 @@
-/**
- * Servicio encargado de manejar la lógica de autenticación.
- *
- * <p>Valida credenciales, registra nuevos usuarios, codifica contraseñas
- * y genera tokens JWT para permitir el acceso seguro al sistema.</p>
- */
 package com.serviciotecnico.auth.service;
 
 import com.serviciotecnico.auth.domain.User;
@@ -37,7 +31,7 @@ public class AuthService {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales inválidas");
 		}
 
-		return new AuthResponse(jwtService.generateToken(user.getEmail()));
+		return new AuthResponse(jwtService.generateToken(user.getEmail(), user.getRol()));
 	}
 
 	public AuthResponse register(RegisterRequest request) {
@@ -45,9 +39,10 @@ public class AuthService {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya está registrado");
 		}
 
+		// El rol NUNCA se toma del request: todo autoregistro es CLIENTE por defecto.
 		User user = new User(request.email(), passwordEncoder.encode(request.password()));
 		userRepository.save(user);
 
-		return new AuthResponse(jwtService.generateToken(user.getEmail()));
+		return new AuthResponse(jwtService.generateToken(user.getEmail(), user.getRol()));
 	}
 }

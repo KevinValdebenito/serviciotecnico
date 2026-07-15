@@ -19,7 +19,7 @@ class JwtServiceTest {
     @Test
     void testGenerateToken(){
         String email = "kevin@correo.com";
-        String token = jwtService.generateToken(email);
+        String token = jwtService.generateToken(email, "CLIENTE");
         assertNotNull(token);
         assertFalse(token.isEmpty());
         String[] parts = token.split("\\.");

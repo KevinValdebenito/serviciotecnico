@@ -1,44 +1,64 @@
 services:
- 
+
   db-empleado:
     image: postgres:15-alpine
     container_name: postgres-empleado
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: employee_db
-    ports:
-      - "5436:5432"
+    volumes:
+      - empleado_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   db-ticket:
     image: postgres:15-alpine
     container_name: postgres-ticket
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ticket
-    ports:
-      - "5433:5432"
+    volumes:
+      - ticket_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   db-cliente:
     image: postgres:15-alpine
     container_name: postgres-cliente
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: cliente_db
-    ports:
-      - "5434:5432"
+    volumes:
+      - cliente_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   db-auth:
     image: postgres:15-alpine
     container_name: postgres-auth
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: auth_db
-    ports:
-      - "5435:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app-empleado:
     build: ./empleado
@@ -48,11 +68,20 @@ services:
     environment:
       - DB_URL=jdbc:postgresql://db-empleado:5432/employee_db
       - DB_USERNAME=postgres
-      - DB_PASSWORD=root
+      - DB_PASSWORD=${DB_PASSWORD}
       - APITICKET_URL=http://app-ticket:8082/api
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db-empleado
-      - app-ticket
+      db-empleado:
+        condition: service_healthy
+      app-ticket:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   app-ticket:
     build: ./ticket
@@ -62,9 +91,17 @@ services:
     environment:
       - DB_URL=jdbc:postgresql://db-ticket:5432/ticket
       - DB_USERNAME=postgres
-      - DB_PASSWORD=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db-ticket
+      db-ticket:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8082/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   app-cliente:
     build: ./cliente
@@ -74,9 +111,17 @@ services:
     environment:
       - DB_URL=jdbc:postgresql://db-cliente:5432/cliente_db
       - DB_USERNAME=postgres
-      - DB_PASSWORD=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db-cliente
+      db-cliente:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8083/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   app-auth:
     build: ./auth
@@ -86,9 +131,17 @@ services:
     environment:
       - DB_URL=jdbc:postgresql://db-auth:5432/auth_db
       - DB_USERNAME=postgres
-      - DB_PASSWORD=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - db-auth
+      db-auth:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7778/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   app-bff:
     build: ./bff
@@ -100,9 +153,20 @@ services:
       - TECNICO_SERVICE_URL=http://app-empleado:8081
       - TICKET_SERVICE_URL=http://app-ticket:8082
       - CLIENTE_SERVICE_URL=http://app-cliente:8083
+      - JWT_SECRET=${JWT_SECRET}
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
-      - app-auth
-      - app-empleado
-      - app-ticket
-      - app-cliente
+      app-auth:
+        condition: service_healthy
+      app-empleado:
+        condition: service_healthy
+      app-ticket:
+        condition: service_healthy
+      app-cliente:
+        condition: service_healthy
+
+volumes:
+  auth_data:
+  empleado_data:
+  ticket_data:
+  cliente_data:

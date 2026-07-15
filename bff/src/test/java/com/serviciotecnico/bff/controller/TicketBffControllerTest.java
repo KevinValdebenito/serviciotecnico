@@ -19,6 +19,8 @@ import com.serviciotecnico.bff.services.TicketResumenService;
 @ExtendWith(MockitoExtension.class)
 class TicketBffControllerTest {
 
+    private static final String AUTH_HEADER = "Bearer test-token";
+
     @Mock
     private TicketResumenService ticketResumenService;
 
@@ -31,14 +33,14 @@ class TicketBffControllerTest {
         // Usamos el constructor del record, pasando null a los campos que no validamos en este test
         TicketResumenDTO resumen = new TicketResumenDTO(idTicket, "Pantalla rota", null, null, null, null);
 
-        when(ticketResumenService.obtenerResumenCompleto(idTicket)).thenReturn(resumen);
+        when(ticketResumenService.obtenerResumenCompleto(idTicket, AUTH_HEADER)).thenReturn(resumen);
 
-        TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket).getBody();
+        TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket, AUTH_HEADER).getBody();
 
         assertNotNull(result);
         assertEquals(idTicket, result.idTicket()); // Método de acceso sin "get"
         assertEquals("Pantalla rota", result.titulo());
-        verify(ticketResumenService).obtenerResumenCompleto(idTicket);
+        verify(ticketResumenService).obtenerResumenCompleto(idTicket, AUTH_HEADER);
     }
 
     @Test
@@ -47,9 +49,9 @@ class TicketBffControllerTest {
 
         TicketResumenDTO resumen = new TicketResumenDTO(idTicket, null, null, "Cliente Default", null, null);
 
-        when(ticketResumenService.obtenerResumenCompleto(idTicket)).thenReturn(resumen);
+        when(ticketResumenService.obtenerResumenCompleto(idTicket, AUTH_HEADER)).thenReturn(resumen);
 
-        TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket).getBody();
+        TicketResumenDTO result = controller.obtenerResumenCompleto(idTicket, AUTH_HEADER).getBody();
 
         assertNotNull(result);
         assertEquals("Cliente Default", result.nombreCliente());

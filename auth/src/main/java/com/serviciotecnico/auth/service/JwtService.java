@@ -1,9 +1,3 @@
-/**
- * Servicio encargado de generar tokens JWT para usuarios autenticados.
- *
- * <p>Utiliza una clave secreta configurada en la aplicación y define
- * una expiración para cada token generado.</p>
- */
 package com.serviciotecnico.auth.service;
 
 import java.nio.charset.StandardCharsets;
@@ -44,12 +38,13 @@ public class JwtService {
 		}
 	}
 
-	public String generateToken(String email) {
+	public String generateToken(String email, String rol) {
 		Instant now = Instant.now();
 		Instant exp = now.plus(Duration.ofHours(expirationHours));
 
 		return Jwts.builder()
 			.subject(email)
+			.claim("rol", rol)
 			.issuedAt(Date.from(now))
 			.expiration(Date.from(exp))
 			.signWith(signingKey)

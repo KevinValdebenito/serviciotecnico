@@ -1,14 +1,9 @@
-/**
- * Servicio encargado de construir un resumen completo de un ticket.
- *
- * <p>Consulta información desde los microservicios de tickets, clientes
- * y empleados para entregar una respuesta consolidada al frontend.</p>
- */
 package com.serviciotecnico.bff.services;
 
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -39,11 +34,12 @@ public class TicketResumenService {
         this.tecnicoServiceUrl = tecnicoServiceUrl;
     }
 
-    public TicketResumenDTO obtenerResumenCompleto(UUID idTicket) {
+    public TicketResumenDTO obtenerResumenCompleto(UUID idTicket, String authorizationHeader) {
         TicketDTO ticketBase;
         try {
             ticketBase = restClient.get()
                 .uri(ticketServiceUrl + "/api/tickets/" + idTicket)
+                .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                 .retrieve()
                 .body(TicketDTO.class);
         } catch (Exception exception) {
@@ -60,6 +56,7 @@ public class TicketResumenService {
 
             ClienteDTO cliente = restClient.get()
                 .uri(clienteServiceUrl + "/api/clientes/" + emailToSearch)
+                .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                 .retrieve()
                 .body(ClienteDTO.class);
 
@@ -75,6 +72,7 @@ public class TicketResumenService {
             try {
                 EmpleadoDTO empleado = restClient.get()
                     .uri(tecnicoServiceUrl + "/api/empleados/" + ticketBase.employeeId())
+                    .header(HttpHeaders.AUTHORIZATION, authorizationHeader)
                     .retrieve()
                     .body(EmpleadoDTO.class);
 
