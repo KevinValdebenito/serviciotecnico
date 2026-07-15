@@ -156,17 +156,31 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=DEBUG
     depends_on:
-      app-auth:
-        condition: service_healthy
-      app-empleado:
-        condition: service_healthy
-      app-ticket:
-        condition: service_healthy
-      app-cliente:
-        condition: service_healthy
+      - app-auth
+      - app-empleado
+      - app-ticket
+      - app-cliente
 
-volumes:
-  auth_data:
-  empleado_data:
-  ticket_data:
-  cliente_data:
+  db-cotizacion:
+    image: postgres:15-alpine
+    container_name: postgres-cotizacion
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: cotizacion_db
+    ports:
+      - "5437:5432"
+
+  app-cotizacion:
+    build: ./cotizacion
+    container_name: api-cotizacion
+    ports:
+      - "8088:8088"
+    environment:
+      - DB_URL=jdbc:postgresql://db-cotizacion:5432/cotizacion_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=root
+      - TICKET_SERVICE_URL=http://app-ticket:8082
+    depends_on:
+      - db-cotizacion
+      - app-ticket
