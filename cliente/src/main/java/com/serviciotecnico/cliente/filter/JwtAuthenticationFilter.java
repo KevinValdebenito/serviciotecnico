@@ -1,6 +1,6 @@
-package com.serviciotecnico.empleado.filter;
+package com.serviciotecnico.cliente.filter;
 
-import com.serviciotecnico.empleado.util.JwtUtil;
+import com.serviciotecnico.cliente.util.JwtUtil;
 
 import java.io.IOException;
 import java.util.List;

@@ -19,6 +19,9 @@ public class User {
 	@Column(nullable = false)
 	private boolean active = true;
 
+	@Column(nullable = false)
+	private String rol = "CLIENTE";
+
 	public User() {
 	}
 
@@ -26,6 +29,7 @@ public class User {
 		this.email = email;
 		this.password = password;
 		this.active = true;
+		this.rol = "CLIENTE";
 	}
 
 	public String getEmail() {
@@ -50,5 +54,13 @@ public class User {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public String getRol() {
+		return rol;
+	}
+
+	public void setRol(String rol) {
+		this.rol = rol;
 	}
 }

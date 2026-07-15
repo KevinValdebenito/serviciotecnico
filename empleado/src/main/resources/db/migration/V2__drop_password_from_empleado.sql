@@ -1,0 +1,1 @@
+ALTER TABLE empleado DROP COLUMN password_hash;

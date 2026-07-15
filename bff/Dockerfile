@@ -1,3 +1,18 @@
-FROM eclipse-temurin:25-jdk-alpine
-COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# ---- Etapa 1: build ----
+FROM eclipse-temurin:25-jdk-alpine AS build
+WORKDIR /app
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+RUN chmod +x gradlew
+
+COPY src src
+
+RUN ./gradlew clean bootJar -x test --no-daemon
+
+# ---- Etapa 2: imagen final, liviana ----
+FROM eclipse-temurin:25-jre-alpine
+WORKDIR /app
+COPY --from=build /app/build/libs/*-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

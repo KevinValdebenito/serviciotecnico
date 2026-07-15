@@ -1,8 +1,7 @@
 package com.serviciotecnico.empleado.dto;
 
-public record RegisterRequest(
+public record CrearEmpleadoRequest(
     String username,
-    String password,
     String email,
     String rol
 ) {

@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import com.serviciotecnico.empleado.dto.ApiResponse;
+import com.serviciotecnico.empleado.dto.CrearEmpleadoRequest;
 import com.serviciotecnico.empleado.dto.EmpleadoResponse;
 import com.serviciotecnico.empleado.dto.TicketDto;
 import com.serviciotecnico.empleado.service.EmpleadoService;
@@ -94,5 +95,21 @@ class EmpleadoControllerTest {
         assertEquals(true, response.getBody().success());
         assertEquals(1, response.getBody().data().size());
         verify(empleadoService).getTickets(null, "Cerrado");
+    }
+
+    @Test
+    void crearEmpleadoShouldReturnCreatedWithEmpleadoResponse() {
+        CrearEmpleadoRequest request = new CrearEmpleadoRequest("Nuevo Tecnico", "nuevo@correo.com", "TECNICO");
+        EmpleadoResponse creado = new EmpleadoResponse(UUID.randomUUID(), "Nuevo Tecnico", "nuevo@correo.com", "TECNICO");
+
+        when(empleadoService.crear(request)).thenReturn(creado);
+
+        ResponseEntity<ApiResponse<EmpleadoResponse>> response = empleadoController.crearEmpleado(request);
+
+        assertEquals(201, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertEquals(true, response.getBody().success());
+        assertEquals("nuevo@correo.com", response.getBody().data().getEmail());
+        verify(empleadoService).crear(request);
     }
 }
