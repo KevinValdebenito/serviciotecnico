@@ -60,6 +60,22 @@ services:
       timeout: 5s
       retries: 10
 
+  db-cotizacion:
+    image: postgres:15-alpine
+    container_name: postgres-cotizacion
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: cotizacion_db
+    volumes:
+      - cotizacion_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cotizacion_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   app-empleado:
     build: ./empleado
     container_name: api-empleado
@@ -170,3 +186,4 @@ volumes:
   empleado_data:
   ticket_data:
   cliente_data:
+  cotizacion_data:

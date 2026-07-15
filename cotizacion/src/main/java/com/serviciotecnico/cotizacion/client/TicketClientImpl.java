@@ -5,19 +5,18 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 import com.serviciotecnico.cotizacion.dto.TicketResponse;
+import com.serviciotecnico.cotizacion.exception.AutorizacionException;
 import com.serviciotecnico.cotizacion.exception.RemoteServiceException;
 import com.serviciotecnico.cotizacion.exception.ResourceNotFoundException;
 
-/**
- * Cliente HTTP que consume el endpoint GET /api/tickets/{id}.
- */
 @Component
 public class TicketClientImpl implements TicketClient {
 
@@ -31,43 +30,62 @@ public class TicketClientImpl implements TicketClient {
                 .build();
     }
 
-    /**
-     * Verifica que el ticket exista antes de crear o actualizar una cotización.
-     *
-     * @param ticketId identificador del ticket
-     * @return ticket encontrado
-     */
     @Override
-    public TicketResponse obtenerPorId(UUID ticketId) {
-        try {
-            log.info("Consultando ticket remoto con id {}", ticketId);
+    public TicketResponse obtenerPorId(UUID ticketId, String authorization) {
+        validarAuthorization(authorization);
 
-            TicketResponse ticket = restClient.get()
+        try {
+            TicketResponse response = restClient.get()
                     .uri("/api/tickets/{id}", ticketId)
+                    .header(HttpHeaders.AUTHORIZATION, authorization)
                     .retrieve()
                     .body(TicketResponse.class);
 
-            if (ticket == null) {
+            if (response == null || response.id() == null) {
                 throw new RemoteServiceException(
-                        "El microservicio de tickets respondió sin contenido");
+                        "El microservicio de tickets respondió sin datos válidos");
             }
 
-            return ticket;
-        } catch (HttpClientErrorException.NotFound ex) {
-            throw new ResourceNotFoundException(
-                    "No existe un ticket con id: " + ticketId);
+            return response;
         } catch (RestClientResponseException ex) {
-            log.error(
-                    "El microservicio de tickets respondió con estado {}",
-                    ex.getStatusCode(),
-                    ex
-            );
-            throw new RemoteServiceException(
-                    "Error al consultar tickets. Código remoto: " + ex.getStatusCode());
+            throw convertirError(ex, ticketId);
         } catch (RestClientException ex) {
-            log.error("No fue posible conectar con el microservicio de tickets", ex);
+            log.error("No fue posible conectar con el microservicio ticket", ex);
             throw new RemoteServiceException(
                     "El microservicio de tickets no está disponible");
+        }
+    }
+
+    private RuntimeException convertirError(
+            RestClientResponseException ex,
+            UUID ticketId
+    ) {
+        HttpStatusCode status = ex.getStatusCode();
+
+        if (status.value() == 404) {
+            return new ResourceNotFoundException(
+                    "No existe el ticket con id: " + ticketId);
+        }
+
+        if (status.value() == 401 || status.value() == 403) {
+            return new AutorizacionException(
+                    "El token no permite consultar el microservicio de tickets");
+        }
+
+        log.error(
+                "Error remoto de ticket. id={}, status={}",
+                ticketId,
+                status,
+                ex
+        );
+        return new RemoteServiceException(
+                "Error al consultar tickets. Código remoto: " + status.value());
+    }
+
+    private void validarAuthorization(String authorization) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            throw new AutorizacionException(
+                    "Debes enviar el encabezado Authorization con un token Bearer");
         }
     }
 }

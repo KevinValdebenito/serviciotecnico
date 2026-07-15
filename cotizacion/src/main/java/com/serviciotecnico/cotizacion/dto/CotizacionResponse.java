@@ -2,11 +2,9 @@ package com.serviciotecnico.cotizacion.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
-/**
- * Respuesta JSON entregada por el microservicio.
- */
 public record CotizacionResponse(
         UUID id,
         UUID ticketId,
@@ -19,6 +17,7 @@ public record CotizacionResponse(
         BigDecimal iva,
         BigDecimal total,
         String estado,
+        List<DetalleCotizacionResponse> repuestos,
         LocalDateTime fechaCreacion,
         LocalDateTime fechaActualizacion
 ) {
