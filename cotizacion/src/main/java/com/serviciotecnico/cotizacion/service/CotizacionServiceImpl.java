@@ -2,114 +2,87 @@ package com.serviciotecnico.cotizacion.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.serviciotecnico.cotizacion.client.RepuestoClient;
 import com.serviciotecnico.cotizacion.client.TicketClient;
 import com.serviciotecnico.cotizacion.dto.CotizacionRequest;
 import com.serviciotecnico.cotizacion.dto.CotizacionResponse;
+import com.serviciotecnico.cotizacion.dto.DetalleCotizacionResponse;
+import com.serviciotecnico.cotizacion.dto.ItemCotizacionRequest;
+import com.serviciotecnico.cotizacion.dto.RepuestoResponse;
 import com.serviciotecnico.cotizacion.dto.TicketResponse;
 import com.serviciotecnico.cotizacion.entity.Cotizacion;
+import com.serviciotecnico.cotizacion.entity.CotizacionDetalle;
 import com.serviciotecnico.cotizacion.exception.BusinessException;
-import com.serviciotecnico.cotizacion.exception.PersistenceOperationException;
 import com.serviciotecnico.cotizacion.exception.ResourceNotFoundException;
+import com.serviciotecnico.cotizacion.exception.StockException;
 import com.serviciotecnico.cotizacion.repository.CotizacionRepository;
 
-/**
- * Implementación de las reglas y operaciones de cotizaciones.
- */
 @Service
 public class CotizacionServiceImpl implements CotizacionService {
 
     private static final Logger log = LoggerFactory.getLogger(CotizacionServiceImpl.class);
-
-    private static final BigDecimal PORCENTAJE_IVA = new BigDecimal("0.19");
-    private static final Set<String> ESTADOS_VALIDOS = Set.of(
-            "PENDIENTE",
-            "APROBADA",
-            "RECHAZADA",
-            "VENCIDA"
-    );
-    private static final List<String> ESTADOS_ACTIVOS = List.of(
-            "PENDIENTE",
-            "APROBADA"
-    );
+    private static final BigDecimal IVA = new BigDecimal("0.19");
+    private static final Set<String> ESTADOS_ACTIVOS = Set.of("PENDIENTE", "APROBADA");
 
     private final CotizacionRepository cotizacionRepository;
+    private final RepuestoClient repuestoClient;
     private final TicketClient ticketClient;
 
     public CotizacionServiceImpl(
             CotizacionRepository cotizacionRepository,
+            RepuestoClient repuestoClient,
             TicketClient ticketClient
     ) {
         this.cotizacionRepository = cotizacionRepository;
+        this.repuestoClient = repuestoClient;
         this.ticketClient = ticketClient;
     }
 
-    /**
-     * Lista todas las cotizaciones guardadas en la base de datos.
-     *
-     * @return cotizaciones registradas
-     */
     @Override
     @Transactional(readOnly = true)
     public List<CotizacionResponse> listarTodas() {
-        log.info("Listando todas las cotizaciones");
-
         return cotizacionRepository.findAll()
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
     }
 
-    /**
-     * Obtiene una cotización por id.
-     *
-     * @param id identificador de la cotización
-     * @return cotización encontrada
-     */
     @Override
     @Transactional(readOnly = true)
     public CotizacionResponse obtenerPorId(UUID id) {
-        Cotizacion cotizacion = buscarEntidad(id);
-        return convertirAResponse(cotizacion);
+        return convertirAResponse(buscarEntidad(id));
     }
 
-    /**
-     * Obtiene las cotizaciones asociadas a un ticket.
-     *
-     * @param ticketId identificador del ticket
-     * @return lista ordenada desde la más reciente
-     */
     @Override
     @Transactional(readOnly = true)
     public List<CotizacionResponse> listarPorTicket(UUID ticketId) {
-        log.info("Listando cotizaciones del ticket {}", ticketId);
-
-        return cotizacionRepository
-                .findByTicketIdOrderByFechaCreacionDesc(ticketId)
+        return cotizacionRepository.findByTicketIdOrderByFechaCreacionDesc(ticketId)
                 .stream()
                 .map(this::convertirAResponse)
                 .toList();
     }
 
-    /**
-     * Crea una cotización después de comprobar que el ticket remoto existe.
-     *
-     * @param request datos enviados por el cliente
-     * @return cotización creada
-     */
     @Override
     @Transactional
-    public CotizacionResponse crear(CotizacionRequest request) {
-        TicketResponse ticket = ticketClient.obtenerPorId(request.ticketId());
+    public CotizacionResponse crear(
+            CotizacionRequest request,
+            String authorization
+    ) {
+        TicketResponse ticket = ticketClient.obtenerPorId(
+                request.ticketId(),
+                authorization
+        );
         validarTicketCotizable(ticket);
 
         if (cotizacionRepository.existsByTicketIdAndEstadoIn(
@@ -121,77 +94,267 @@ public class CotizacionServiceImpl implements CotizacionService {
         }
 
         Cotizacion cotizacion = new Cotizacion();
-        aplicarDatos(cotizacion, request, true);
-        calcularMontos(cotizacion);
+        cotizacion.setEstado("PENDIENTE");
+        aplicarDatos(cotizacion, request, authorization);
 
-        try {
-            Cotizacion guardada = cotizacionRepository.save(cotizacion);
-            log.info(
-                    "Cotización {} creada para ticket {} con total {}",
-                    guardada.getId(),
-                    guardada.getTicketId(),
-                    guardada.getTotal()
-            );
-            return convertirAResponse(guardada);
-        } catch (DataAccessException ex) {
-            log.error("Error al guardar la cotización", ex);
-            throw new PersistenceOperationException(
-                    "No fue posible guardar la cotización",
-                    ex
-            );
-        }
+        Cotizacion guardada = cotizacionRepository.saveAndFlush(cotizacion);
+        log.info("Cotización {} creada con total {}", guardada.getId(), guardada.getTotal());
+        return convertirAResponse(guardada);
     }
 
-    /**
-     * Actualiza una cotización existente y recalcula subtotal, neto, IVA y total.
-     *
-     * @param id identificador de la cotización
-     * @param request nuevos datos
-     * @return cotización actualizada
-     */
     @Override
     @Transactional
-    public CotizacionResponse actualizar(UUID id, CotizacionRequest request) {
-        Cotizacion existente = buscarEntidad(id);
+    public CotizacionResponse actualizar(
+            UUID id,
+            CotizacionRequest request,
+            String authorization
+    ) {
+        Cotizacion cotizacion = buscarEntidad(id);
+        validarPendiente(cotizacion, "actualizar");
 
-        TicketResponse ticket = ticketClient.obtenerPorId(request.ticketId());
+        TicketResponse ticket = ticketClient.obtenerPorId(
+                request.ticketId(),
+                authorization
+        );
         validarTicketCotizable(ticket);
 
-        aplicarDatos(existente, request, false);
-        calcularMontos(existente);
-
-        try {
-            Cotizacion actualizada = cotizacionRepository.save(existente);
-            log.info("Cotización {} actualizada", id);
-            return convertirAResponse(actualizada);
-        } catch (DataAccessException ex) {
-            log.error("Error al actualizar la cotización {}", id, ex);
-            throw new PersistenceOperationException(
-                    "No fue posible actualizar la cotización",
-                    ex
-            );
+        if (cotizacionRepository.existsByTicketIdAndEstadoInAndIdNot(
+                request.ticketId(),
+                ESTADOS_ACTIVOS,
+                id
+        )) {
+            throw new BusinessException(
+                    "El ticket ya posee otra cotización pendiente o aprobada");
         }
+
+        aplicarDatos(cotizacion, request, authorization);
+
+        Cotizacion actualizada = cotizacionRepository.saveAndFlush(cotizacion);
+        log.info("Cotización {} actualizada", id);
+        return convertirAResponse(actualizada);
     }
 
-    /**
-     * Elimina una cotización existente.
-     *
-     * @param id identificador de la cotización
-     */
+    @Override
+@Transactional
+public CotizacionResponse aprobar(UUID id, String authorization) {
+    Cotizacion cotizacion = buscarEntidad(id);
+    validarPendiente(cotizacion, "aprobar");
+
+    validarStockActual(cotizacion, authorization);
+
+    List<CotizacionDetalle> descontados = new ArrayList<>();
+
+    try {
+        for (CotizacionDetalle detalle : cotizacion.getDetalles()) {
+            repuestoClient.reducirStock(
+                    detalle.getRepuestoId(),
+                    detalle.getCantidad(),
+                    authorization
+            );
+
+            descontados.add(detalle);
+        }
+
+        cotizacion.setEstado("APROBADA");
+
+        Cotizacion aprobada =
+                cotizacionRepository.saveAndFlush(cotizacion);
+
+        log.info(
+                "Cotización {} aprobada y stock descontado",
+                id
+        );
+
+        return convertirAResponse(aprobada);
+
+    } catch (RuntimeException ex) {
+        compensarStock(descontados, authorization);
+        throw ex;
+    }
+}
+
+    @Override
+    @Transactional
+    public CotizacionResponse rechazar(UUID id) {
+        Cotizacion cotizacion = buscarEntidad(id);
+        validarPendiente(cotizacion, "rechazar");
+        cotizacion.setEstado("RECHAZADA");
+
+        Cotizacion rechazada = cotizacionRepository.saveAndFlush(cotizacion);
+        log.info("Cotización {} rechazada", id);
+        return convertirAResponse(rechazada);
+    }
+
     @Override
     @Transactional
     public void eliminar(UUID id) {
-        Cotizacion existente = buscarEntidad(id);
+        Cotizacion cotizacion = buscarEntidad(id);
 
-        try {
-            cotizacionRepository.delete(existente);
-            log.info("Cotización {} eliminada", id);
-        } catch (DataAccessException ex) {
-            log.error("Error al eliminar la cotización {}", id, ex);
-            throw new PersistenceOperationException(
-                    "No fue posible eliminar la cotización",
-                    ex
+        if ("APROBADA".equals(cotizacion.getEstado())) {
+            throw new BusinessException(
+                    "No se puede eliminar una cotización aprobada");
+        }
+
+        cotizacionRepository.delete(cotizacion);
+        log.info("Cotización {} eliminada", id);
+    }
+
+    private void aplicarDatos(
+            Cotizacion cotizacion,
+            CotizacionRequest request,
+            String authorization
+    ) {
+        List<CotizacionDetalle> detalles = construirDetalles(
+                request.repuestos(),
+                authorization
+        );
+
+        cotizacion.setTicketId(request.ticketId());
+        cotizacion.setDescripcion(request.descripcion().trim());
+        cotizacion.setManoObra(escalar(request.manoObra()));
+        cotizacion.setDescuento(escalar(
+                request.descuento() == null ? BigDecimal.ZERO : request.descuento()
+        ));
+        cotizacion.reemplazarDetalles(detalles);
+
+        calcularMontos(cotizacion);
+    }
+
+    private List<CotizacionDetalle> construirDetalles(
+            List<ItemCotizacionRequest> items,
+            String authorization
+    ) {
+        Set<UUID> ids = new HashSet<>();
+        List<CotizacionDetalle> detalles = new ArrayList<>();
+
+        for (ItemCotizacionRequest item : items) {
+            if (!ids.add(item.repuestoId())) {
+                throw new BusinessException(
+                        "No repitas el mismo repuesto dentro de la cotización");
+            }
+
+            RepuestoResponse repuesto = repuestoClient.obtenerPorId(
+                    item.repuestoId(),
+                    authorization
             );
+
+            validarRepuesto(repuesto, item.cantidad());
+
+            BigDecimal precio = escalar(repuesto.precio());
+            BigDecimal subtotal = precio
+                    .multiply(BigDecimal.valueOf(item.cantidad()))
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            detalles.add(new CotizacionDetalle(
+                    repuesto.id(),
+                    repuesto.nombre(),
+                    precio,
+                    item.cantidad(),
+                    subtotal
+            ));
+        }
+
+        return detalles;
+    }
+
+    private void validarRepuesto(RepuestoResponse repuesto, Integer cantidad) {
+        if (repuesto.precio() == null || repuesto.precio().signum() < 0) {
+            throw new BusinessException(
+                    "El repuesto " + repuesto.id() + " tiene un precio inválido");
+        }
+
+        if (repuesto.stock() == null || repuesto.stock() < cantidad) {
+            throw new StockException(
+                    "Stock insuficiente para '" + repuesto.nombre()
+                            + "'. Disponible: " + repuesto.stock()
+                            + ", solicitado: " + cantidad);
+        }
+    }
+
+    private void validarStockActual(Cotizacion cotizacion, String authorization) {
+        for (CotizacionDetalle detalle : cotizacion.getDetalles()) {
+            RepuestoResponse repuesto = repuestoClient.obtenerPorId(
+                    detalle.getRepuestoId(),
+                    authorization
+            );
+            validarRepuesto(repuesto, detalle.getCantidad());
+        }
+    }
+
+    private void compensarStock(
+            List<CotizacionDetalle> descontados,
+            String authorization
+    ) {
+        for (int i = descontados.size() - 1; i >= 0; i--) {
+            CotizacionDetalle detalle = descontados.get(i);
+            try {
+                repuestoClient.aumentarStock(
+                        detalle.getRepuestoId(),
+                        detalle.getCantidad(),
+                        authorization
+                );
+            } catch (RuntimeException compensationError) {
+                log.error(
+                        "No se pudo compensar el stock del repuesto {}",
+                        detalle.getRepuestoId(),
+                        compensationError
+                );
+            }
+        }
+    }
+
+    private void calcularMontos(Cotizacion cotizacion) {
+        BigDecimal costoRepuestos = cotizacion.getDetalles()
+                .stream()
+                .map(CotizacionDetalle::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal subtotal = cotizacion.getManoObra()
+                .add(costoRepuestos)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        if (cotizacion.getDescuento().compareTo(subtotal) > 0) {
+            throw new BusinessException(
+                    "El descuento no puede superar el subtotal");
+        }
+
+        BigDecimal neto = subtotal
+                .subtract(cotizacion.getDescuento())
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal iva = neto
+                .multiply(IVA)
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal total = neto
+                .add(iva)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        cotizacion.setCostoRepuestos(costoRepuestos);
+        cotizacion.setSubtotal(subtotal);
+        cotizacion.setNeto(neto);
+        cotizacion.setIva(iva);
+        cotizacion.setTotal(total);
+    }
+
+    private BigDecimal escalar(BigDecimal valor) {
+        return valor.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private void validarTicketCotizable(TicketResponse ticket) {
+        String estado = ticket.status() == null
+                ? ""
+                : ticket.status().trim().toUpperCase();
+
+        if ("CERRADO".equals(estado) || "CANCELADO".equals(estado)) {
+            throw new BusinessException(
+                    "No se puede cotizar un ticket cerrado o cancelado");
+        }
+    }
+
+    private void validarPendiente(Cotizacion cotizacion, String operacion) {
+        if (!"PENDIENTE".equals(cotizacion.getEstado())) {
+            throw new BusinessException(
+                    "Solo se puede " + operacion + " una cotización PENDIENTE");
         }
     }
 
@@ -201,93 +364,18 @@ public class CotizacionServiceImpl implements CotizacionService {
                         "No existe una cotización con id: " + id));
     }
 
-    private void aplicarDatos(
-            Cotizacion cotizacion,
-            CotizacionRequest request,
-            boolean esCreacion
-    ) {
-        cotizacion.setTicketId(request.ticketId());
-        cotizacion.setDescripcion(request.descripcion().trim());
-        cotizacion.setManoObra(request.manoObra());
-        cotizacion.setCostoRepuestos(request.costoRepuestos());
-        cotizacion.setDescuento(
-                request.descuento() == null
-                        ? BigDecimal.ZERO
-                        : request.descuento()
-        );
-
-        if (request.estado() != null && !request.estado().isBlank()) {
-            cotizacion.setEstado(normalizarEstado(request.estado()));
-        } else if (esCreacion) {
-            cotizacion.setEstado("PENDIENTE");
-        }
-    }
-
-    private String normalizarEstado(String estado) {
-        String normalizado = estado.trim().toUpperCase();
-
-        if (!ESTADOS_VALIDOS.contains(normalizado)) {
-            throw new BusinessException(
-                    "Estado inválido. Use PENDIENTE, APROBADA, RECHAZADA o VENCIDA");
-        }
-
-        return normalizado;
-    }
-
-    private void validarTicketCotizable(TicketResponse ticket) {
-        if (ticket.id() == null) {
-            throw new BusinessException(
-                    "La respuesta del ticket no contiene un identificador válido");
-        }
-
-        String estadoTicket = ticket.status() == null
-                ? ""
-                : ticket.status().trim().toUpperCase();
-
-        if ("CERRADO".equals(estadoTicket) || "CANCELADO".equals(estadoTicket)) {
-            throw new BusinessException(
-                    "No se puede cotizar un ticket cerrado o cancelado");
-        }
-    }
-
-    private void calcularMontos(Cotizacion cotizacion) {
-        BigDecimal manoObra = escalar(cotizacion.getManoObra());
-        BigDecimal costoRepuestos = escalar(cotizacion.getCostoRepuestos());
-        BigDecimal descuento = escalar(cotizacion.getDescuento());
-
-        BigDecimal subtotal = manoObra.add(costoRepuestos);
-
-        if (descuento.compareTo(subtotal) > 0) {
-            throw new BusinessException(
-                    "El descuento no puede superar el subtotal");
-        }
-
-        BigDecimal neto = subtotal.subtract(descuento);
-        BigDecimal iva = neto
-                .multiply(PORCENTAJE_IVA)
-                .setScale(2, RoundingMode.HALF_UP);
-        BigDecimal total = neto
-                .add(iva)
-                .setScale(2, RoundingMode.HALF_UP);
-
-        cotizacion.setManoObra(manoObra);
-        cotizacion.setCostoRepuestos(costoRepuestos);
-        cotizacion.setDescuento(descuento);
-        cotizacion.setSubtotal(subtotal.setScale(2, RoundingMode.HALF_UP));
-        cotizacion.setNeto(neto.setScale(2, RoundingMode.HALF_UP));
-        cotizacion.setIva(iva);
-        cotizacion.setTotal(total);
-    }
-
-    private BigDecimal escalar(BigDecimal valor) {
-        if (valor == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-
-        return valor.setScale(2, RoundingMode.HALF_UP);
-    }
-
     private CotizacionResponse convertirAResponse(Cotizacion cotizacion) {
+        List<DetalleCotizacionResponse> repuestos = cotizacion.getDetalles()
+                .stream()
+                .map(detalle -> new DetalleCotizacionResponse(
+                        detalle.getRepuestoId(),
+                        detalle.getNombreRepuesto(),
+                        detalle.getPrecioUnitario(),
+                        detalle.getCantidad(),
+                        detalle.getSubtotal()
+                ))
+                .toList();
+
         return new CotizacionResponse(
                 cotizacion.getId(),
                 cotizacion.getTicketId(),
@@ -300,6 +388,7 @@ public class CotizacionServiceImpl implements CotizacionService {
                 cotizacion.getIva(),
                 cotizacion.getTotal(),
                 cotizacion.getEstado(),
+                repuestos,
                 cotizacion.getFechaCreacion(),
                 cotizacion.getFechaActualizacion()
         );

@@ -2,17 +2,21 @@ package com.serviciotecnico.cotizacion.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-
 
 @Entity
 @Table(name = "cotizaciones")
@@ -59,25 +63,39 @@ public class Cotizacion {
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
 
+    @OneToMany(
+            mappedBy = "cotizacion",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<CotizacionDetalle> detalles = new ArrayList<>();
+
     public Cotizacion() {
     }
 
     @PrePersist
-    public void antesDeCrear() {
-        this.fechaCreacion = LocalDateTime.now();
+    void antesDeCrear() {
+        fechaCreacion = LocalDateTime.now();
     }
 
     @PreUpdate
-    public void antesDeActualizar() {
-        this.fechaActualizacion = LocalDateTime.now();
+    void antesDeActualizar() {
+        fechaActualizacion = LocalDateTime.now();
+    }
+
+    public void reemplazarDetalles(List<CotizacionDetalle> nuevosDetalles) {
+        detalles.clear();
+        nuevosDetalles.forEach(this::agregarDetalle);
+    }
+
+    public void agregarDetalle(CotizacionDetalle detalle) {
+        detalle.setCotizacion(this);
+        detalles.add(detalle);
     }
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
     }
 
     public UUID getTicketId() {
@@ -164,15 +182,11 @@ public class Cotizacion {
         return fechaCreacion;
     }
 
-    public void setFechaCreacion(LocalDateTime fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
-
     public LocalDateTime getFechaActualizacion() {
         return fechaActualizacion;
     }
 
-    public void setFechaActualizacion(LocalDateTime fechaActualizacion) {
-        this.fechaActualizacion = fechaActualizacion;
+    public List<CotizacionDetalle> getDetalles() {
+        return detalles;
     }
 }
