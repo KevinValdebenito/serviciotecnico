@@ -313,7 +313,6 @@ status
 ------
 UP
 ```
-
 Para detener una aplicación iniciada con `bootRun`, utiliza `Ctrl + C`.
 
 ## Ejecución con Docker Compose
