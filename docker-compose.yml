@@ -63,8 +63,6 @@ services:
   db-cotizacion:
     image: postgres:15-alpine
     container_name: postgres-cotizacion
-    ports:
-      - "5437:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -76,6 +74,52 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  db-equipo:
+    image: postgres:15-alpine
+    container_name: postgres-equipo
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: equipo_db
+    volumes:
+      - equipo_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d equipo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-repuesto:
+    image: postgres:15-alpine
+    container_name: postgres-repuesto
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: repuesto_db
+    volumes:
+      - repuesto_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d repuesto_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-diagnostico:
+    image: postgres:15-alpine
+    container_name: postgres-diagnostico
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: diagnostico_db
+    volumes:
+      - diagnostico_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d diagnostico_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app-empleado:
     build: ./empleado
     container_name: api-empleado
@@ -159,6 +203,106 @@ services:
       retries: 10
       start_period: 30s
 
+  app-equipo:
+    build: ./equipo
+    container_name: api-equipo
+    ports:
+      - "8084:8084"
+    environment:
+      - DB_URL=jdbc:postgresql://db-equipo:5432/equipo_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db-equipo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8084/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app-repuesto:
+    build: ./repuesto
+    container_name: api-repuesto
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_URL=jdbc:postgresql://db-repuesto:5432/repuesto_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db-repuesto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8085/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app-diagnostico:
+    build: ./diagnostico
+    container_name: api-diagnostico
+    ports:
+      - "8086:8086"
+    environment:
+      - DB_URL=jdbc:postgresql://db-diagnostico:5432/diagnostico_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db-diagnostico:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8086/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app-notificacion:
+    build: ./notificacion
+    container_name: api-notificacion
+    ports:
+      - "8087:8087"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8087/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app-cotizacion:
+    build: ./cotizacion
+    container_name: api-cotizacion
+    ports:
+      - "8088:8088"
+    environment:
+      - DB_URL=jdbc:postgresql://db-cotizacion:5432/cotizacion_db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
+      - TICKET_SERVICE_URL=http://app-ticket:8082
+      - REPUESTO_SERVICE_URL=http://app-repuesto:8085
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db-cotizacion:
+        condition: service_healthy
+      app-ticket:
+        condition: service_healthy
+      app-repuesto:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8088/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
   app-bff:
     build: ./bff
     container_name: api-bff
@@ -180,6 +324,26 @@ services:
         condition: service_healthy
       app-cliente:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/v3/api-docs"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  gateway:
+    build: ./gateway
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - AUTH_SERVICE_URL=http://app-auth:7778
+      - BFF_SERVICE_URL=http://app-bff:8080
+    depends_on:
+      app-auth:
+        condition: service_healthy
+      app-bff:
+        condition: service_healthy
 
 volumes:
   auth_data:
@@ -187,3 +351,6 @@ volumes:
   ticket_data:
   cliente_data:
   cotizacion_data:
+  equipo_data:
+  repuesto_data:
+  diagnostico_data:
